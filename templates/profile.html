@@ -1,0 +1,76 @@
+{% extends "components/base.html" %}
+{% load django_app_filters_and_tags %}
+{%load static%}
+{% block title %}Profile{% endblock title %}
+
+{% block main %}
+<style>
+  .avatar-preview-container {
+    width: 100px; 
+    height: 100px;
+    overflow: hidden;
+    border-radius: 50%; 
+  }
+
+  .avatar-preview {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+  }
+</style>
+<div class="container mt-5">
+    <div class="card">
+                <div class="p-3 avatar-preview-container">
+                   {% if user.profile.get_avatar_url %}
+                    <img src="{{ user.profile.get_avatar_url }}" class="avatar-preview rounded-circle" alt="User Avatar">
+                    {% else %}
+                    <img src="{% static 'media/png/user.png' %}" class="mr-3 rounded-circle" alt="User Avatar" width="50">
+                    {% endif %} 
+            </div>
+            <div class="col-12 col-md-8">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <a href="{% url 'change_data' user_profile.user.username %}" id="changeColor" class="text-warning">
+                        <i class="fas fa-wrench me-2" style="cursor: pointer; font-size: 1.5em;"></i>
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                        <h2 class="card-title">Здравствуйте, {{ user.username }}!</h2>
+                        <p class="card-text">Email: {{ user.email }}</p>
+                    {% if user.first_name or user.last_name %}
+                        <p class="card-text">Имя: {{ user.first_name }} <br>Фамилия: {{ user.last_name }}</p>
+                    {% endif %}
+                        <p class="card-text">Последний Вход: {%formatted_time user.last_login %}</p>
+                        <p class="card-text">Дата Регистрации: {%formatted_time user.date_joined %}</p>
+                        {% check_access "UsersModeratePage_view" as access %}
+                        {%if access%}
+                        <span>
+                        <a href="{% url 'moderate_users' %}" class="btn btn-warning btn-sm" data-toggle="tooltip" data-placement="top" title="Click to access user moderation">
+                            <i class="fas fa-user-cog"></i> Модерация пользователей
+                        </a>
+                        {%check_access "ModerateSite" as access%}
+                        {%if access%}
+                        <a href="{% url 'ModerateSiteView' %}" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Click to access site moderation">
+                            <i class="fas fa-cogs"></i> Модерация сайта
+                        </a>
+
+                        {%endif%}
+                        </span>
+                        <h3 class="card-title">Права:</h3>
+                            <span class="fw-bold">{% for action in user.profile.get_actions %}
+                                <br>{% if user.profile|has_action:action.slug %}
+                                    {{ action.description }}
+                                    {% if not forloop.last %},{% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            </span>
+                        </p>
+                    {%endif%}
+                </div>
+            </div>
+        </div>
+</div>
+
+<script src="{% static 'js/edit_profile_button.js' %}"></script>
+
+{% endblock main %}

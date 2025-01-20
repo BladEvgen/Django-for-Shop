@@ -1,0 +1,75 @@
+{% extends "components/base.html" %}
+{% load django_app_filters_and_tags %}
+{% load static %}
+{% block main %}
+  <div class="container mt-5">
+    <h2>Checkout</h2>
+
+    <form method="post" action="{% url 'checkout' %}" class="needs-validation" novalidate>
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label for="lastname" class="form-label">Фамилия:</label>
+        <input type="text" class="form-control" id="lastname" name="lastname" value="{{ user_profile.user.last_name }}" required>
+        <div class="invalid-feedback">
+          Пожалуйства введите правильную Фамилию.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="firstname" class="form-label">Имя:</label>
+          <input type="text" class="form-control" id="firstname" name="firstname" value="{{ user.first_name }}" required>
+        <div class="invalid-feedback">
+          Пожалуйства введите правильное Имя.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+        <div class="invalid-feedback">
+          Пожалуйства введите правильный Email.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="phonenumber" class="form-label">Номер телефона:</label>
+        <input type="tel" class="form-control" id="phonenumber" name="phonenumber" value="{{ user_profile.phonenumber }}" required>
+        <div class="invalid-feedback">
+          Пожалуйства введите правильный номер телефона.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label">Адресс доставки:</label>
+        <textarea class="form-control" id="address" name="address" required>{{ user_profile.address }}</textarea>
+        <div class="invalid-feedback">
+          Пожалуйства введите правильный адресс доставки.
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Разместить заказ</button>
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var forms = document.querySelectorAll('.needs-validation');
+
+      Array.from(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
+  </script>
+
+{% endblock main %}

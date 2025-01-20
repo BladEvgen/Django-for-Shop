@@ -1,0 +1,66 @@
+{% extends "components/base.html" %}
+{% load django_app_filters_and_tags %}
+{% block main %}
+{% check_access "moder_seller" as access %}
+{%if access%}
+  <div class="container mt-5">
+    <a href="{% url 'order_list' %}" class="btn btn-primary mb-3">
+      <i class="fas fa-arrow-left"></i>Вернуться к списку заказов
+    </a>
+    <h3>Контактная информация покупателя:</h3>
+    <div class="row">
+      <div class="col-md-6">
+        <p>Фамилия: {{ order.user.last_name }}</p>
+        <p>Имя: {{ order.user.first_name }}</p>
+      </div>
+      <div class="col-md-6">
+        <p>Номер телефона: {{ order.user.profile.phonenumber }}</p>
+        <p>Адресс доставки: {{ order.user.profile.address }}</p>
+      </div>
+    </div>
+
+    <form method="post" action="{% url 'update_order_status' order.id %}" class="mt-5">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="new_status">Обновить статус заявки:</label>
+        <select name="new_status" id="new_status" class="form-control">
+          {% for status in order.STATUS_CHOICES %}
+            <option value="{{ status.0 }}" {% if order.status == status.0 %}selected{% endif %}>{{ status.1 }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Обновить</button>
+    </form>
+
+    <h3 class="mt-5">Информация о товаре:</h3>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th>Колличество</th>
+            <th>Цена за единицу товара</th>
+            <th>Общая цена за товар</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order_item in order.order_items.all %}
+            <tr>
+              <td>{{ order_item.item.title }}</td>
+              <td class="text-center">{{ order_item.quantity }} шт</td>
+              <td class="text-center">{{ order_item.item.discounted_price|default:order_item.item.price }} <i class="fa-solid fa-tenge-sign"></i></td>
+              <td class="text-center">{{ order_item.calculate_item_total }} <i class="fa-solid fa-tenge-sign"></i></td>
+            </tr>
+          {% endfor %}
+          <tr>
+            <td colspan="3" class="text-right"><strong>Общая стоимость всех продуктов:</strong> </td>
+            <td class="text-center">{{ order.get_total_price }}  <i class="fa-solid fa-tenge-sign"></i></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+<div class="container-fluid"> <p>Как вы попали сюда?</p></div>
+{%endif%}
+{% endblock %}

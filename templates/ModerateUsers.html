@@ -1,0 +1,46 @@
+{% extends "components/base.html" %}
+{% load django_app_filters_and_tags %}
+{% load static %}
+{% block title %}User Moderation{% endblock title %}
+{% block main %}
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">Модерация пользователей</h2>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <ul class="list-group">
+          {% for u in users %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center" style="min-width: 150px;">
+                {{ u.username }}
+              </div>
+              {% if u != request.user %}
+                  <div class="btn-group">
+                  {% if u.profile.user.is_active %}
+                  {% check_access "UsersModeratePage_ban" as access %}
+                  {% if access %}
+                    <a href="{% url 'moderate_ban_users' user_id=u.profile.id %}" class="btn btn-warning btn-sm me-5">Забанить</a>
+                  {% endif %}
+                  {% else %}
+                  {% check_access "UsersModeratePage_unban" as access %}
+                  {% if access %}
+                    <a href="{% url 'moderate_unban_users' user_id=u.profile.id %}" class="btn btn-success btn-sm me-5">Разбанить</a>
+                  {% endif %}
+                  {% endif %}
+                  {% check_access "UsersModeratePage_delete" as access %}
+                  {% if access %}
+                  <a href="{% url 'moderate_delete_users' user_id=u.profile.id %}" class="btn btn-danger btn-sm delete-btn" data-username="{{ u.username }}">Удалить</a>
+                  {% endif %}
+                </div>
+              {% else %}
+                <span class="badge bg-secondary mx-2">Вы</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+<script src="{% static 'js/confrim_delete_user.js' %}"></script>
+
+{% endblock main %}

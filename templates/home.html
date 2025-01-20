@@ -1,0 +1,187 @@
+{% extends "components/base.html" %} {% block title %} Home {% endblock title %}
+{% load django_app_filters_and_tags %} 
+{% load static %}
+{% block main %}
+<style>
+  .custom-color {
+    background-color: #ff7300; /* Синий цвет для фона */
+    color: #ffffff; /* Белый цвет для текста */
+  }
+</style>
+<div class="bg-transparent border border-gray rounded-3">
+  <div class="collapse show" id="navbarToggleExternalContent">
+    <div class="bg-transparent p-4">
+      <h4 class="text-black h4 d-flex justify-content-center">Категории</h4>
+      <div class="container">
+        <ul
+          class="list-unstyled d-flex flex-wrap justify-content-center m-1 p-1">
+          {% for c in categories %}
+          <li class="mb-2 me-4">
+            <h5>
+              <a
+                class="text-black text-decoration-none"
+                href="{% url 'item' c.slug %}"
+                class="text-black">
+                {{ c.title }}
+                </a>
+            </h5>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <nav class="navbar navbar-dark custom-color">
+    <div class="container-fluid">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarToggleExternalContent"
+        aria-controls="navbarToggleExternalContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+{% load django_app_filters_and_tags %}
+<div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+  <h1 class="display-4 fw-normal text-body-emphasis">VIP-товары</h1>
+  <p class="fs-5 text-body-secondary">Самые лучшие в категориях:</p>
+</div>
+
+{% if vips|length > 3 %}
+  <div id="vipCarousel" class="carousel slide" data-bs-ride="carousel">
+    <!-- Индикаторы -->
+    <div class="carousel-indicators">
+      {% for chunk in vips|chunked:3 %}
+        <button type="button" data-bs-target="#vipCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Слайд {{ forloop.counter }}"></button>
+      {% endfor %}
+    </div>
+    
+    <!-- Карусельные слайды -->
+    <div class="carousel-inner">
+      {% for chunk in vips|chunked:3 %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+          <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-3 text-center justify-content-center">
+            {% for v in chunk %}
+              <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                  <div>
+                    <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}" style="height:250px; max-width:100%; object-fit: cover;">
+                  </div>
+                  <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">{{ v.article.title }}</h4>
+                  </div>
+                  <div class="card-body">
+                    <h1 class="card-title pricing-card-title">
+                      {% if v.article.discounted_price %}
+                        {{ v.article.discounted_price|digit_beautify_filter }}
+                        <small class="text-body-secondary fw-light">₸</small>
+                      {% else %}
+                        {{ v.article.price|digit_beautify_filter }}
+                        <small class="text-body-secondary fw-light">₸</small>
+                      {% endif %}
+                    </h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                      <li>{{ v.article.description|custom_cut:50 }}</li>
+                    </ul>
+                    <a href="{% url 'product_detail' v.article.id %}" type="button" class="w-100 btn btn-lg btn-outline-primary">Детали</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Контролы карусели -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#vipCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Предыдущий</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#vipCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Следующий</span>
+    </button>
+  </div>
+{% else %}
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-3 text-center justify-content-center">
+    {% for v in vips %}
+      <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+          <div>
+            <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}" style="height:250px; max-width:100%; object-fit: cover;">
+          </div>
+          <div class="card-header py-3">
+            <h4 class="my-0 fw-normal">{{ v.article.title }}</h4>
+          </div>
+          <div class="card-body">
+            <h1 class="card-title pricing-card-title">
+              {% if v.article.discounted_price %}
+                {% digit_beautify v.article.discounted_price %}
+                <small class="text-body-secondary fw-light">₸</small>
+              {% else %}
+                {% digit_beautify v.article.price %}
+                <small class="text-body-secondary fw-light">₸</small>
+              {% endif %}
+            </h1>
+            <ul class="list-unstyled mt-3 mb-4">
+              <li>{{ v.article.description|custom_cut:50 }}</li>
+            </ul>
+            <a href="{% url 'product_detail' v.article.id %}" type="button" class="w-100 btn btn-lg btn-outline-primary">Детали</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col">
+        <h2>Будьте первыми в VIP</h2>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+<hr />
+
+<div class="container col-xxl-8 px-4 py-5">
+  <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+    <div class="col-10 col-sm-8 col-lg-6">
+      <img
+        src="https://cdn.worldvectorlogo.com/logos/electro-world.svg"
+        class="d-block mx-lg-auto img-fluid rounded-5"
+        alt="Bootstrap Themes"
+        width="350"
+        height="500"
+        loading="lazy" />
+    </div>
+    <div class="col-lg-6 display-5 fw-bold text-body-emphasis lh-1 mb-3">
+      {% include "components/logo_olx.html" %}
+      <p class="lead">
+        Крупнейший онлайн-сервис объявлений Казахстана Все онлайн-объявления
+        Казахстана на OLX - здесь вы найдете то, что искали! Нажав на кнопку
+        "Подать объявление", вы сможете разместить объявление на любую тематику
+        легко и быстро. С помощью сервиса OLX вы сможете купить или продать из
+        рук в руки практически все, что угодно.
+      </p>
+      <div class="d-grid gap-2 d-md-flex justify-content-md-start"></div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var vipCarouselElement = document.getElementById('vipCarousel');
+    if (vipCarouselElement) {
+      var vipCarousel = new bootstrap.Carousel(vipCarouselElement, {
+        interval: 3500, 
+        ride: 'carousel',
+        wrap: true,
+        pause: 'hover'
+      });
+    }
+  });
+</script>
+
+{% endblock main %}

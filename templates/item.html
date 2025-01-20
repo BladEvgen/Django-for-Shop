@@ -1,0 +1,50 @@
+{% extends 'components/base.html' %}
+{% load django_app_filters_and_tags %}
+{% load static %}
+
+{% block main %}
+<style>
+    .ratio img {
+        object-fit: cover;
+    }
+</style>
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+        {% for item in items %}
+            <div class="col">
+                <a href="{%url "product_detail" item.id %}" class="card text-decoration-none">
+                    <div class="card-body">
+                        <div class="ratio ratio-4x3">
+                            <img src="{% item_image_url item %}" alt="{{ item.name }}" class="img-fluid">
+                        </div>
+
+                        <h5 class="card-title">{{ item.title|custom_cut:25 }}</h5>
+                        <p class="card-text text-muted">{{ item.description|custom_cut:44 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            {% if item.discounted_price %}
+                                <span class="text-danger">{% digit_beautify item.discounted_price %} ₸</span>
+                            {% else %}
+                                <span class="text-danger">{% digit_beautify item.price %} ₸</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <div class="card text-decoration-none">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">Ни одного товара не найдено!</h5>
+                            <p class="card-text text-muted">Попробуйте изменить критерии поиска или вернитесь позже.</p>
+                            <img src="{% static 'media/png/nodatafound.png' %}" alt="No Products Image" class="img-fluid mt-3" style="max-height: 1000px; ">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock main %}

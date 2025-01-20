@@ -1,0 +1,165 @@
+{% extends "components/base.html" %}
+{% load django_app_filters_and_tags %}
+{% load static %}
+{% block title %}Product Detail{% endblock title %}
+{% block main %}
+<div class="container mt-5">
+    
+    <h2 class="mb-4 text-center">{{ product.title }}           
+        {%if request.user == product.author%}
+                <a href="{%url 'modify_item' product.id%}" id="changeColor" class="text-warning">
+                    <i class="fas fa-wrench me-2" style="cursor: pointer; font-size: 1.5em;"></i>
+                </a>
+            {%endif%}
+        </h2> 
+        <div class="text-center m-3">
+            <img src="{% item_image_url product %}" alt="{{ product.title }}" class="img-fluid" style="max-width: 450; max-height: 450px;">
+        </div>
+    <div class="card">
+        <div class="card-body">
+
+            <h5 class="card-title">Описание</h5>
+            <p class="card-text">{{ product.description }}</p>
+            
+            {% if product.discounted_price %}
+                <span class="old-price">{% digit_beautify product.price %} ₸</span>
+                <span class="new-price fw-bold">{% digit_beautify product.discounted_price %} ₸</span>
+                <span class="discount-percentage fw-bold">({{ product.discount_percentage }}% off)</span>
+            {% else %}
+                <span class="price fw-bold">{% digit_beautify product.price %}  ₸</span>
+            {% endif %}
+        </div>
+        <form class="d-flex justify-content-center mb-3" method="post" action="{% url 'add_to_cart' product.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary ">
+                <i class="fas fa-shopping-cart"></i> Добавить в корзину
+            </button>
+        </form>
+
+    </div>
+    {% if user.is_authenticated %}
+        {% if request.user != product.author %}
+            <a href="#" class="chat-icon display-5" onclick="openChat('{{ product.author.username }}', '{{ product.id }}')">
+                <i class="fa-solid fa-comment"></i>
+            </a>
+        {% endif %}
+        <div class="mt-4">
+            {% if is_my_rating == 1 %}
+                <a href="{% url 'rating' product.id '1' %}"><i class="row fa-solid fa-thumbs-up text-success display-6 m-1 p-3"></i></a>
+            {% else %}
+                <a href="{% url 'rating' product.id '1' %}"><i class="row fa-regular fa-thumbs-up text-success display-6 m-1 p-3"></i></a>
+            {% endif %}
+            {%if total_rating_value < 0 %}
+                <div class="row display-6 text-danger m-1 p-1">Рейтинг товара: {{ total_rating_value }}</div>
+            {%else%}
+                <div class="row display-6 text-success m-1 p-1">Рейтинг товара: {{ total_rating_value }}</div>
+            {%endif%}
+
+            {% if is_my_rating == -1 %}
+                <a href="{% url 'rating' product.id '-1' %}"><i class="row fa-solid fa-thumbs-down display-6 text-danger m-1 p-3"></i></a>
+            {% else %}
+                <a href="{% url 'rating' product.id '-1' %}"><i class="row fa-regular fa-thumbs-down display-6 text-danger m-1 p-3"></i></a>
+            {% endif %}
+            <h4>Написать отзыв</h4>
+            <form method="post" action="{% url 'add_review' product.id %}">
+                {% csrf_token %}
+                <textarea name="content" class="form-control mb-2" placeholder="оставьте ваш отзыв здесь" required></textarea>
+                <button type="submit" class="btn btn-primary">Подтвердить</button>
+            </form>
+            <div class="display-6 text-danger m-1 p-1">{{ total_rating_value.dislikes }}</div>
+        </div>
+    {% else %}
+        {%if total_rating_value < 0 %}
+                <div class=" row display-6 text-danger m-1 p-1">Рейтинг товара: {{ total_rating_value }}</div>
+            {%else%}
+                <div class="row display-6 text-success m-1 p-1">Рейтинг товара: {{ total_rating_value }}</div>
+            {%endif%}
+        <p class="mt-4"> <a href="{% url 'login' %}" class="styled-link">Войдите</a> чтобы оставить отзыв</p>
+    {% endif %}
+    <div class="mt-4">
+    <h4>Отзывы</h4>
+    {% for review in reviews %}    
+        <div class="d-flex review-container flex-row-reverse">
+            <div class="review-buttons d-flex justify-content-end mt-2">
+                {% if user.is_authenticated and user == review.user %}
+                    <form method="post" action="{% url 'delete_review' product.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="review_id" value="{{ review.id }}">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <button class="btn btn-outline-none text-danger" style="cursor: pointer; font-size: 1.5em;" onclick="return confirm('Are you sure you want to delete this review?')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="review-container">
+            <div class="media mb-3 review-content">
+                <img src="{% if review.user.profile.avatar %}{{ review.user.profile.get_avatar_url }}
+                {% else %}{% static 'media/png/user.png' %}
+                {% endif %}" class="mr-3 rounded-circle" alt="User Avatar" width="50">
+                <div class="media-body">
+                    <h5 class="mt-0">{{ review.user.username }}</h5
+                    {% if review.content|length > 200 %}
+                        <p class="d-flex justify-content-center custom-justified">{{ review.content }}</p>
+                    {% else %}
+                        <p>{{ review.content }}</p>
+                    {% endif %}
+                    <p class="text-muted">{% relative_time review.created_at %}</p>
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_authenticated and user.is_staff %}
+            <div class="review-buttons">
+                <form method="post" action="{% url 'product_detail' product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="review_id" value="{{ review.id }}">
+                    {% if review.is_visible %}
+                        <input type="hidden" name="action" value="hide">
+                        <a href="#" class="styled-link" onclick="this.closest('form').submit(); return false;">Скрыть</a>
+                    {% else %}
+                        <input type="hidden" name="action" value="unhide">
+                        <a href="#" class="styled-link" onclick="this.closest('form').submit(); return false;">Показать</a>
+                    {% endif %}
+                </form>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+</div>
+<script>
+    function openChat(authorUsername, itemId) {
+        console.log('Attempting to create chat room...');
+
+        if (!itemId) {
+            console.error('Invalid itemId:', itemId);
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url "create_chat_room" %}',
+            data: {
+                'author_username': authorUsername,
+                'item_id': itemId,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = response.room_url;
+                } else {
+                    alert('Error creating chat room - Success response is false');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log('Error creating chat room - ' + textStatus + ': ' + errorThrown);
+                console.log('Server response:', jqXHR.responseJSON);
+            }
+        });
+    }
+</script>
+{% include "components/paginator.html" %}
+<script src="{% static 'js/edit_profile_button.js' %}"></script>
+
+{% endblock main %}

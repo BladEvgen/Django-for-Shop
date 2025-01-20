@@ -1,0 +1,28 @@
+{% extends "components/base.html" %}
+{% load django_app_filters_and_tags %}
+{% load static %}
+
+{% block title %}Создать элемент категории{% endblock title %}
+
+{% block main %}
+  <div class="container mt-4">
+    <h2>Создать элемент категории</h2>
+    <form method="post" action="{% url 'create_category_item' %}" class="my-4">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="title">Название:</label>
+        <input type="text" name="title" class="form-control" required />
+      </div>
+      <div class="form-group">
+        <label for="slug">Ссылка (Slug):</label>
+        <input type="text" name="slug" class="form-control" required />
+        <small class="form-text text-muted">
+          Слаг (slug) - это URL-дружественная версия названия. Он должен быть в нижнем регистре, разделен дефисами и описательным. Должен быть написанн на Английском языке либо транскриптом, нельзя чтобы содержались русские символы.
+          <br>Пример: "creating-a-category-item"
+        </small>
+      </div>
+      <button type="submit" class="btn btn-primary mt-3">Создать</button>
+    </form>
+  </div>
+  <script src="{% static 'js/slug.js' %}"></script>
+{% endblock main %}

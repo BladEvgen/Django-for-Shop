@@ -1,0 +1,15 @@
+{% extends "components/base.html" %}
+{% load django_app_filters_and_tags %}
+{% load static %}
+{% block title %}Moderate Site{% endblock title %}
+{% block main %}
+  <div class="container mt-4">
+    <h2 class="mb-4">Moderate Site</h2>
+
+    {% check_access "CreateItemCategory" as access %}
+      {% if access %}
+        <a href="{% url 'create_category_item' %}" class="btn btn-primary">Создать категорию товаров</a>
+      {% endif %}
+
+  </div>
+{% endblock main %}

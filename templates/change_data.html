@@ -1,0 +1,85 @@
+{% extends "components/base.html" %} {% block title %} Home {% endblock title %}
+{% load django_app_filters_and_tags %} 
+{% load static %}
+{% block main %}
+<style>
+  .avatar-preview-container {
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 50%;
+    margin-bottom: 20px; 
+  }
+
+  .avatar-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>
+<div class="container mt-5">
+  <h2 class="mb-4">Обновление профиля</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+      <label for="email" class="form-label">Email:</label>
+      <input type="email" name="email" class="form-control" value="{{ user.email }}" >
+    </div>
+
+    <div class="mb-3">
+      <label for="first_name" class="form-label">Имя:</label>
+      <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}" >
+    </div>
+
+    <div class="mb-3">
+      <label for="last_name" class="form-label">Фамилия:</label>
+      <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}" >
+    </div>
+
+    <div class="mb-3">
+      <label for="avatar" class="form-label">Предпросмотр автарки:</label>
+      <div class="avatar-preview-container">
+        {% if user_profile.get_avatar_url %}
+            <img id="avatar-preview" class="avatar-preview rounded-circle" src="{{ user_profile.get_avatar_url }}" alt="Avatar Preview">
+        {% else %}
+            <img id="avatar-preview" class="avatar-preview rounded-circle" src="{% static 'media/png/user.png' %}" alt="User Avatar" width="50">
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="avatar" class="form-label">Выбрать аватар:</label>
+      <input type="file" name="avatar" id="avatar" class="form-control" accept=".jpg, .jpeg, .png, .webp"> 
+    </div>
+
+    <button type="submit" class="btn btn-primary">Обновить</button>
+  </form>
+</div>
+<script>
+  function updateAvatarPreview() {
+    var input = document.getElementById('avatar');
+    var preview = document.getElementById('avatar-preview');
+
+    input.addEventListener('change', function () {
+      var file = input.files[0];
+
+      if (file) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+      } else {
+        preview.src = "{{ user_profile.get_avatar_url }}";
+      }
+    });
+  }
+
+  window.onload = updateAvatarPreview;
+</script>
+
+{% endblock main %}
+

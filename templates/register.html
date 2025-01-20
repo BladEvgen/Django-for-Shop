@@ -1,0 +1,62 @@
+{% extends "components/base.html" %}
+{% load static %}
+{% block title %}Register{% endblock title %}
+{% block main %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Register</h2>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+                    <form method="post" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                        <small id="passwordHelp" class="form-text text-muted"></small>
+
+                        <div class="progress mt-2" style="height: 10px;">
+                            <div id="passwordStrength" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+
+                        <small id="passwordTip" class="form-text text-muted"></small>
+
+                        <div class="m-3">
+                            <button type="submit" class="btn btn-success btn-lg d-block mx-auto" id="registerBtn" disabled>Register</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/validate_password.js' %}"></script>
+<script>
+    document.getElementById("togglePassword").addEventListener("click", function () {
+        var passwordInput = document.getElementById("password");
+        var type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
+    });
+</script>
+{% endblock main %}

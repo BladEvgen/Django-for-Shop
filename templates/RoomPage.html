@@ -1,0 +1,82 @@
+{% extends "components/base.html" %}
+{% load static %}
+{% load django_app_filters_and_tags %}
+{% block title %}Chat with                 
+{% if request.user == room.user_started %}
+{{ room.user_opponent.username|title }}
+{% else %}
+{{ room.user_started.username|title }}
+{% endif %} {% endblock title %}
+{% block main %}
+<script src="https://cdn.tailwindcss.com"></script>
+<div
+    class="w-full md:w-2/3 lg:w-3/4 overflow-hidden flex flex-col m-auto border border-solid border-gray-100 rounded-xl shadow-lg my-3">
+    <div class="flex flex-row items-center mx-3 my-1 bg-gray-100 rounded-t-2xl p-3 gap-x-3">
+        {% comment %} <span class="text-2xl"><a href="{ %url% 'product_detail' room.item.id }"> < </a> {% endcomment %}
+             </span>
+            {% if request.user == room.user_started %}
+                {% with avatar_url=room.user_opponent.profile.get_avatar_url %}
+                    <img src="{{ avatar_url|default:'/static/media/png/user.png' }}" alt="" class="w-10 h-10 rounded-full">
+                {% endwith %}
+            {% else %}
+                {% with avatar_url=room.user_started.profile.get_avatar_url %}
+                    <img src="{{ avatar_url|default:'/static/media/png/user.png' }}" alt="" class="w-10 h-10 rounded-full">
+                {% endwith %}
+            {% endif %}
+
+                <span class="font-bold text-3xl">
+                    {% if request.user == room.user_started %}
+                    {{ room.user_opponent.username|title }}
+                    {% else %}
+                    {{ room.user_started.username|title }}
+                    {% endif %}
+                </span>
+    </div>
+
+    <div class="flex flex-row items-center mx-3 mb-2 bg-gray-100 p-3 gap-x-3">
+        <img src="{% item_image_url room.item %}" alt="{{ room.item.title }}"
+            class="h-auto w-24 transition-all duration-300 rounded-lg cursor-pointer filter grayscale hover:grayscale-0">
+        <div class="flex flex-col gap-y-2">
+            <span>{{room.item.title}}</span>
+            {%if room.item.discounted_price%}
+            <span>{{room.item.discounted_price}} <i class="fa-solid fa-tenge-sign"></i></span>
+            {%else%}
+            <span>{{room.item.price}} <i class="fa-solid fa-tenge-sign"></i></span>
+            {%endif%}
+        </div>
+    </div>
+
+    <div class="h-[50vh] flex flex-col gap-y-3 mx-3 overflow-y-auto" id="chat-messages"
+        data-avafiruser="{{ room.user_started.profile.get_avatar_url }}"
+        data-avasecuser="{{ room.user_opponent.profile.get_avatar_url }}" data-firusername="{{ messages.0.user }}"
+        data-secusername="{{ request.user }}">
+
+        {% for message in messages %}
+        <div class="flex {% if message.user == request.user %}flex-row-reverse{% else %}flex-row{% endif %} gap-x-2">
+<!--            <img src="{% if message.user.profile.get_avatar_url %}{{ message.user.profile.get_avatar_url }}{% else %}{% static 'media/png/user.png' %}{% endif %}" alt="" class="w-10 h-10 rounded-full"> -->
+
+            <div
+                class="flex flex-col rounded-xl gap-y-2 p-2 {% if message.user == request.user %}bg-violet-300{% else %}bg-gray-200{% endif %}">
+                <div class="flex flex-row gap-x-3">
+                    <span class="font-bold">{{ message.user.username }}</span>
+                </div>
+                <span>{{ message.content }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <form class="flex flex-row items-center gap-x-3 mx-3 my-1 bg-gray-100 rounded-xl p-3">
+        {% csrf_token %}
+        <textarea name="content"
+            class="w-3/4 items-center bg-transparent border-none focus:outline-none resize-none text-xl placeholder:text-xl placeholder:text-gray-400"
+            placeholder="Your message..." id="chat-message-input" required></textarea>
+        <button class="w-1/4 px-4 py-3 rounded-xl text-white bg-teal-600 hover:bg-teal-700 focus:outline-none"
+            id="chat-message-submit">Send</button>
+    </form>
+</div>
+    {{ room.slug|json_script:"json-roomname" }}
+    {{ request.user.username|json_script:"json-username" }}
+    {{ room.token|json_script:"json-token" }}
+    <script src="{% static 'js/chat.js' %}"></script>
+{% endblock main %}

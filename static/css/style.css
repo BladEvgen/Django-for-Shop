@@ -1,0 +1,48 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex-grow: 1;
+}
+
+footer {
+    margin-top: auto;
+}
+
+
+.styled-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.styled-link:hover {
+    text-decoration: underline;
+}
+
+.review-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.review-content {
+    flex: 1;
+}
+
+.review-buttons {
+    margin-left: 10px;
+}
+
+.custom-justified {
+    text-align: justify;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: #888;
+    margin-right: 5px;
+}
