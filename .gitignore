@@ -161,3 +161,4 @@ cython_debug/
 *.db
 /eshop_app/migrations
 /log
+/static

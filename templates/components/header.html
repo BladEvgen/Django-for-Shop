@@ -216,9 +216,10 @@
   </div>
 </header>
 
+{% if request.resolver_match.url_name == 'home' %}
 <!-- Навигационная панель с категориями -->
 <div class="navbar_color rounded-bottom  mb-4">
-  <div class="collapse show" id="navbarToggleExternalContent">
+  <div class="collapse hidden" id="navbarToggleExternalContent">
     <div class="p-4">
       <h4 class="text-white text-center h4">Категории</h4>
       <div class="container">
@@ -244,3 +245,4 @@
     </div>
   </nav>
 </div>
+{% endif %}
