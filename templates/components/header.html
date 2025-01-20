@@ -1,0 +1,246 @@
+{% load static %}
+{% load django_app_filters_and_tags %}
+<style>
+  .navbar_color {
+    background-image: linear-gradient(to right, #d95300, #ff7300, #ff8c00);
+    color: white; 
+  }
+
+  .navbar-brand { 
+    display: flex; 
+    align-items: center; 
+  }
+  .navbar-brand img { 
+    max-height: 40px;
+    margin-right: 10px; 
+  }
+
+  .navbar-nav .nav-link, 
+  .navbar-nav .dropdown-toggle {
+    color: white !important;
+    margin-right: 15px;
+  }
+
+  .custom-search-button {
+    background-color: #d95300; 
+    color: white; 
+    border-color: #d95300;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .custom-search-button:hover {
+    background-color: transparent;
+    color: #d95300; 
+  }
+
+  .icon-container { 
+    display: inline-flex;
+    flex-direction: column; 
+    align-items: center;
+    white-space: nowrap; 
+    margin-right: 25px;
+  }
+  .icon-container i { 
+    font-size: 1.2rem; 
+  } 
+  .icon-container span { 
+    font-size: 12px; 
+    color: white; 
+    margin-top: 3px; 
+  }
+  .icon-container a { 
+    text-decoration: none;
+  }
+
+  #search-form {
+    flex-grow: 1;
+  }
+  #search-form .form-control {
+    font-size: 14px; 
+  }
+  #search-form .btn {
+    padding: 0.375rem 0.75rem; 
+    font-size: 14px;
+  }
+
+  @media (max-width: 767px) {
+    .hide_on_mobile {
+      display: none;
+    }
+
+    .navbar-brand {
+      order: 2; 
+      margin-left: auto; 
+      flex-direction: column;
+      align-items: flex-end; 
+    }
+    .navbar-brand img {
+      margin-right: 0; 
+      margin-bottom: 5px; 
+    }
+
+    .navbar-toggler {
+      order: 1; 
+    }
+
+    .navbar-nav {
+      margin-top: 10px; 
+      text-align: center; 
+    }
+    .navbar-nav .nav-link, 
+    .navbar-nav .dropdown-toggle {
+      margin-right: 0;
+    }
+
+    #search-form {
+      margin-top: 10px;
+      justify-content: center; 
+    }
+
+    .icon-container {
+      margin-right: 10px; 
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 991px) {
+    .icon-container span {
+      display: none; 
+    }
+  }
+</style>
+
+<header class="p-3 navbar_color">
+  <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+      <a class="navbar-brand" href="{% url 'home' %}">
+        {% include "components/logo.html" %}
+      </a>
+
+      {% if request.user.is_authenticated %}
+      <div class="icon-container"> 
+        <a href="{% url 'cart_detail' %}">
+          <i class="fas fa-shopping-cart text-white"></i> 
+        </a>
+        <span class="hide_on_mobile">Корзина</span> 
+      </div>
+      <div class="icon-container">
+        <a href="{% url 'chat' %}" class="text-white">
+          <i class="fas fa-comments"></i> 
+        </a>
+        <span class="hide_on_mobile">Комнаты чата</span> 
+      </div>
+      {% else %}
+      <a href="#" style="display: none;" class="icon-container text-white">
+        <i class="fas fa-comments"></i> <span class="hide_on_mobile">Комнаты чата</span>
+      </a>
+      {% endif %}
+
+      {% check_access "moder_seller" as order_access %}
+      {% if order_access %}
+      <div class="icon-container">
+        <a href="{% url 'order_list' %}" class="btn btn-sm text-white" data-toggle="tooltip" data-placement="top" title="Click to access orders"> 
+          <i class="fa-solid fa-fax"></i>
+        </a>
+        <span class="hide_on_mobile">Заказы</span> 
+      </div>
+      {% endif %}
+
+      {% check_access "UsersModeratePage_view" as user_access %}
+      {% if user_access %}
+      <div class="icon-container">
+        <a href="{% url 'moderate_users' %}" class="btn btn-sm text-white" data-toggle="tooltip" data-placement="top" title="Click to access user moderation">
+          <i class="fas fa-user-cog"></i> 
+        </a>
+        <span class="hide_on_mobile">Пользователи</span> 
+      </div>
+      {% endif %}
+
+      {% check_access "ModerateSite" as site_access %}
+      {% if site_access %}
+      <div class="icon-container">
+        <a href="{% url 'ModerateSiteView' %}" class="btn btn-sm text-white" data-toggle="tooltip" data-placement="top" title="Click to access site moderation">
+          <i class="fas fa-cogs"></i> 
+        </a>
+        <span class="hide_on_mobile">Настройки</span> 
+      </div>
+      {% endif %}
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-between" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          {% if request.user.is_authenticated %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ request.user.username }}
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item" href="{% url 'profile' username=request.user.username %}">Profile</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'create_item' %}">Добавить продукт</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'user_items' %}">Показать добавленные мной</a>
+              </li>
+              <li>
+                <hr class="dropdown-divider" />
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'logout' %}">Выход</a>
+              </li>
+            </ul>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Логин</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
+          </li>
+          {% endif %}
+        </ul>
+
+        <form id="search-form" class="d-flex justify-content-center justify-content-lg-end" method="post" action="{% url 'search' %}">
+          {% csrf_token %}
+          <input class="form-control me-2 mb-2 mb-lg-0" type="search" minlength="1" value="{{search}}" placeholder="Search" aria-label="Search" name="search" required autofocus />
+          <button class="btn custom-search-button" type="submit"> 
+            Искать 
+          </button>
+        </form>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Навигационная панель с категориями -->
+<div class="navbar_color rounded-bottom  mb-4">
+  <div class="collapse show" id="navbarToggleExternalContent">
+    <div class="p-4">
+      <h4 class="text-white text-center h4">Категории</h4>
+      <div class="container">
+        <ul class="list-unstyled d-flex flex-wrap justify-content-center m-1 p-3">
+          {% for category in categories %}
+          <li class="mb-2 me-4">
+            <h5>
+              <a class="text-white text-decoration-none" href="{% url 'item' category.slug %}">
+                {{ category.title }}
+              </a>
+            </h5>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <nav class="navbar navbar-dark navbar_color">
+    <div class="container-fluid">
+      <button id="burger-menu-button" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </nav>
+</div>
