@@ -488,7 +488,7 @@ def create_chat_room(request):
             try:
                 item = get_object_or_404(models.Item, pk=item_id)
             except models.Item.DoesNotExist:
-                print(f"Item with ID {item_id} not found")
+                logger.error(f"Item with ID {item_id} not found")
                 return JsonResponse({"success": False, "error": "Item not found"})
 
             user_opponent = item.author
@@ -498,7 +498,7 @@ def create_chat_room(request):
                 | Q(user_opponent=request.user, user_started=user_opponent, item=item)
             ).first()
 
-            print(f"\nItem ID: {item_id} \nExisting Room: {existing_room}\n")
+            logger.info(f"\nItem ID: {item_id} \nExisting Room: {existing_room}\n")
 
             if existing_room:
                 room_slug = existing_room.slug
@@ -511,20 +511,20 @@ def create_chat_room(request):
                 room_slug = room.slug
                 room_token = room.token
 
-            print(f"Room Slug: {room_slug}\nRoom Token: {room_token}")
+            logger.info(f"Room Slug: {room_slug}\nRoom Token: {room_token}")
 
-            print(f"Request user: {request.user.username}")
+            logger.info(f"Request user: {request.user.username}")
 
             if room_slug:
                 room_url = reverse("room", args=[room_slug, room_token])
-                print(f"\nRoom created - URL: {room_url}")
+                logger.info(f"\nRoom created - URL: {room_url}")
                 return JsonResponse({"success": True, "room_url": room_url})
             else:
-                print("\nEmpty room_slug encountered\n")
+                logger.error("\nEmpty room_slug encountered\n")
                 return JsonResponse({"success": False, "error": "Empty room_slug"})
 
     except Exception as e:
-        print("Exception in create_chat_room:", str(e))
+        logger.error("Exception in create_chat_room:", str(e))
         return JsonResponse({"success": False, "error": str(e)})
 
 
