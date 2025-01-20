@@ -3,9 +3,8 @@ from django import template
 from eshop_app import models
 from django.utils import formats
 from django.utils import timezone
-from django.utils.timesince import timesince
 from django.utils.translation import get_language
-
+import datetime
 register = template.Library()
 
 
@@ -41,14 +40,27 @@ def digit_beautify_filter(value):
 
 
 @register.simple_tag
-def relative_time(datetime_value):
-    delta = timezone.now() - datetime_value
-
-    if delta.days == 0 and delta.seconds < 86400:
-        return timesince(datetime_value, timezone.now())
+def relative_time(value):
+    if not isinstance(value, datetime.datetime):
+        try:
+            # Попытка преобразовать строку в datetime, если это необходимо
+            value = timezone.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        except (ValueError, TypeError):
+            return "Неверный формат даты"
+    now = timezone.now()
+    delta = now - value
+    
+    # Пример простой реализации
+    if delta.days > 0:
+        return f"{delta.days} дней назад"
+    elif delta.seconds > 3600:
+        hours = delta.seconds // 3600
+        return f"{hours} часов назад"
+    elif delta.seconds > 60:
+        minutes = delta.seconds // 60
+        return f"{minutes} минут назад"
     else:
-        return datetime_value.strftime("%H:%M %d.%m.%Y")
-
+        return "Только что"
 
 @register.filter(name="custom_cut")
 def custom_cut(text, length):
