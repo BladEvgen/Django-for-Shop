@@ -6,9 +6,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     # * Home and User Authentication
-    path("", views.home, name=""),
+    path("", views.home, name="home"),
     path("home/", views.home, name="home"),
-    path("index/", views.home, name="home"),
     path("about/", views.AboutView.as_view()),
     path("register/", views.register, name="register"),
     path("login/", views.login_view, name="login"),
@@ -39,6 +38,8 @@ urlpatterns = [
     path("create_chat_room/", views.create_chat_room, name="create_chat_room"),
     # * MODERATE
     path("moderate/users/", views.ModerateUsersView.as_view(), name="moderate_users"),
+    path('moderate/search-users/', views.SearchUsersView.as_view(), name='search_users'),
+
     path(
         "moderate/ban/<int:user_id>/",
         views.BanUsersView.as_view(),
