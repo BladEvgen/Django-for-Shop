@@ -1,25 +1,26 @@
 <div class="container mt-4">
-  <nav aria-label="Review navigation">
+  <nav aria-label="Навигация по страницам пользователей">
     <ul class="pagination justify-content-center">
+      
       {% if reviews.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page=1" aria-label="First">
+          <a class="page-link" href="?q={{ search_query }}&page=1" aria-label="Первая">
             <span aria-hidden="true">&laquo;&laquo;</span>
           </a>
         </li>
         <li class="page-item">
-          <a class="page-link" href="?page={{ reviews.previous_page_number }}" aria-label="Previous">
+          <a class="page-link" href="?q={{ search_query }}&page={{ reviews.previous_page_number }}" aria-label="Предыдущая">
             <span aria-hidden="true">&laquo;</span>
           </a>
         </li>
       {% else %}
         <li class="page-item disabled">
-          <span class="page-link" aria-label="First">
+          <span class="page-link" aria-label="Первая">
             <span aria-hidden="true">&laquo;&laquo;</span>
           </span>
         </li>
         <li class="page-item disabled">
-          <span class="page-link" aria-label="Previous">
+          <span class="page-link" aria-label="Предыдущая">
             <span aria-hidden="true">&laquo;</span>
           </span>
         </li>
@@ -32,30 +33,30 @@
           </li>
         {% else %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            <a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a>
           </li>
         {% endif %}
       {% endfor %}
 
       {% if reviews.has_next %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ reviews.next_page_number }}" aria-label="Next">
+          <a class="page-link" href="?q={{ search_query }}&page={{ reviews.next_page_number }}" aria-label="Следующая">
             <span aria-hidden="true">&raquo;</span>
           </a>
         </li>
         <li class="page-item">
-          <a class="page-link" href="?page={{ reviews.paginator.num_pages }}" aria-label="Last">
+          <a class="page-link" href="?q={{ search_query }}&page={{ reviews.paginator.num_pages }}" aria-label="Последняя">
             <span aria-hidden="true">&raquo;&raquo;</span>
           </a>
         </li>
       {% else %}
         <li class="page-item disabled">
-          <span class="page-link" aria-label="Next">
+          <span class="page-link" aria-label="Следующая">
             <span aria-hidden="true">&raquo;</span>
           </span>
         </li>
         <li class="page-item disabled">
-          <span class="page-link" aria-label="Last">
+          <span class="page-link" aria-label="Последняя">
             <span aria-hidden="true">&raquo;&raquo;</span>
           </span>
         </li>
