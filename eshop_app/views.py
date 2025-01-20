@@ -24,8 +24,12 @@ from django.utils.translation import activate
 from django.core.files.storage import default_storage
 from eshop_app.utils import decorator_error_handler, password_check
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+import logging
 
-
+logger = logging.getLogger(__name__)
 class AboutView(TemplateView):
     template_name = "about.html"
 
@@ -55,7 +59,7 @@ def home(request):
             expired__gt=datetime.datetime.now(),
             article__is_active=True,
         )
-        .order_by("priority", "-article")
+        .order_by("-priority", "article")
     )
     selected_language = request.COOKIES.get("selected_language", "ENG")
     activate(selected_language)
@@ -553,74 +557,132 @@ def check_access_slug(slug: str, redirect_url: str = "home"):
 class ModerateUsersView(TemplateView):
     template_name = "ModerateUsers.html"
 
-    @check_access_slug(slug="UsersModeratePage_view")
+    @method_decorator(check_access_slug(slug="UsersModeratePage_view"))
     def get(self, request, *args, **kwargs):
+        logger.info("Запрос на страницу модерации пользователей") 
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["users"] = User.objects.all()
+        users = User.objects.select_related('profile').all()
+
+        query = self.request.GET.get('q', '').strip()
+        if query:
+            users = users.filter(username__icontains=query)
+
+        sort_field = self.request.GET.get('sort', 'username')  
+        sort_order = self.request.GET.get('order', 'asc')      
+
+        if sort_field not in ['username', 'date_joined']:
+            sort_field = 'username'
+
+        if sort_order == 'desc':
+            sort_field = f'-{sort_field}'
+
+        users = users.order_by(sort_field)
+
+        logger.debug(f"Сортировка: поле={sort_field}, порядок={sort_order}")
+
+        paginator = Paginator(users, 10)  
+        page_number = self.request.GET.get('page')
+        try:
+            page_obj = paginator.get_page(page_number)
+        except EmptyPage:
+            logger.warning(f"Страница {page_number} вне диапазона, показываем последнюю страницу")
+            page_obj = paginator.get_page(paginator.num_pages)
+        except PageNotAnInteger:
+            logger.warning(f"Номер страницы {page_number} не является целым числом, показываем первую страницу")
+            page_obj = paginator.get_page(1)
+        except Exception as e:
+            logger.error(f"Ошибка пагинации: {e}") 
+            page_obj = paginator.get_page(1) 
+
+        context['users'] = page_obj
+        context['search_query'] = query
+        context['current_sort'] = self.request.GET.get('sort', 'username')
+        context['current_order'] = self.request.GET.get('order', 'asc')
+        logger.debug(f"Контекст: search_query={query}, current_sort={context['current_sort']}, current_order={context['current_order']}")
         return context
 
-
-class BanUsersView(ModerateUsersView):
-    @check_access_slug(slug="UsersModeratePage_ban")
-    def get(self, request, user_id, *args, **kwargs):
-        user_profile = models.UserProfile.objects.get(id=user_id)
-
-        if user_profile:
-            if not user_profile.user.is_active:
-                messages.info(
-                    request, f"User {user_profile.user.username} is already banned."
-                )
-            else:
-                user_profile.ban_user()
-                messages.success(
-                    request,
-                    f"User {user_profile.user.username} has been banned successfully.",
-                )
+class SearchUsersView(ModerateUsersView):
+    @method_decorator(check_access_slug(slug="UsersModeratePage_view"))
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            logger.info("AJAX запрос на поиск пользователей")
+            context = self.get_context_data(**kwargs)
+            html = render_to_string(
+                "components/_user_list.html",
+                {
+                    'users': context['users'], 
+                    'search_query': context['search_query'],
+                    'current_sort': context['current_sort'],    
+                    'current_order': context['current_order'],  
+                },
+                request=request
+            )
+            return HttpResponse(html)
         else:
-            messages.error(request, "User not found.")
+            return super().get(request, *args, **kwargs)
+
+        
+class BanUsersView(ModerateUsersView):
+    @method_decorator(check_access_slug(slug="UsersModeratePage_ban"))
+    def get(self, request, user_id, *args, **kwargs):
+        try:
+            user_profile = models.UserProfile.objects.get(id=user_id)
+        except models.UserProfile.DoesNotExist:
+            logger.error(f"Попытка забанить несуществующего пользователя с ID: {user_id}") 
+            messages.error(request, "Пользователь не найден.")
+            return redirect(reverse("moderate_users"))
+
+        if not user_profile.user.is_active:
+            logger.warning(f"Попытка забанить уже забаненного пользователя: {user_profile.user.username}") 
+            messages.info(request, f"Пользователь {user_profile.user.username} уже забанен.")
+        else:
+            user_profile.ban_user()
+            logger.info(f"Пользователь {user_profile.user.username} забанен") 
+            messages.success(request, f"Пользователь {user_profile.user.username} успешно забанен.")
 
         return redirect(reverse("moderate_users"))
-
 
 class UnbanUsersView(ModerateUsersView):
-    @check_access_slug(slug="UsersModeratePage_unban")
+    @method_decorator(check_access_slug(slug="UsersModeratePage_unban"))
     def get(self, request, user_id, *args, **kwargs):
-        user_profile = models.UserProfile.objects.get(id=user_id)
+        try:
+            user_profile = models.UserProfile.objects.get(id=user_id)
+        except models.UserProfile.DoesNotExist:
+            logger.error(f"Попытка разбанить несуществующего пользователя с ID: {user_id}")
+            messages.error(request, "Пользователь не найден.")
+            return redirect(reverse("moderate_users"))
 
-        if user_profile:
-            if user_profile.user.is_active:
-                messages.info(
-                    request, f"User {user_profile.user.username} is already unbanned."
-                )
-            else:
-                user_profile.unban_user()
-                messages.success(
-                    request,
-                    f"User {user_profile.user.username} has been unbanned successfully.",
-                )
+        if user_profile.user.is_active:
+            logger.warning(f"Попытка разбанить уже разбаненного пользователя: {user_profile.user.username}") 
+            messages.info(request, f"Пользователь {user_profile.user.username} уже разбанен.")
         else:
-            messages.error(request, "User not found.")
+            user_profile.unban_user()
+            logger.info(f"Пользователь {user_profile.user.username} разбанен")  
+            messages.success(request, f"Пользователь {user_profile.user.username} успешно разбанен.")
 
         return redirect(reverse("moderate_users"))
 
-
 class DeleteUsersView(ModerateUsersView):
-    @check_access_slug(slug="UsersModeratePage_delete")
+    @method_decorator(check_access_slug(slug="UsersModeratePage_delete"))
     def get(self, request, user_id, *args, **kwargs):
-        user_profile = models.UserProfile.objects.get(id=user_id)
+        try:
+            user_profile = models.UserProfile.objects.get(id=user_id)
+        except models.UserProfile.DoesNotExist:
+            logger.error(f"Попытка удалить несуществующего пользователя с ID: {user_id}")  
+            messages.error(request, "Пользователь не найден.")
+            return redirect(reverse("moderate_users"))
 
-        if user_profile:
+        try: 
             user_profile.delete_user()
-            messages.success(
-                request,
-                f"User {user_profile.user.username} has been deleted successfully.",
-            )
-        else:
-            messages.error(request, "User not found.")
+            logger.info(f"Пользователь {user_profile.user.username} удален")  
+            messages.success(request, f"Пользователь {user_profile.user.username} успешно удален.")
+        except Exception as e:
+            logger.critical(f"Критическая ошибка при удалении пользователя: {e}")  
+            messages.error(request, "Ошибка при удалении пользователя.")
 
         return redirect(reverse("moderate_users"))
 
