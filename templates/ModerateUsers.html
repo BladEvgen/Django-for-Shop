@@ -1,46 +1,106 @@
 {% extends "components/base.html" %}
+
 {% load django_app_filters_and_tags %}
 {% load static %}
-{% block title %}User Moderation{% endblock title %}
+
+{% block title %}Модерация пользователей{% endblock title %}
+
 {% block main %}
-  <div class="container mt-5">
-    <h2 class="text-center mb-4">Модерация пользователей</h2>
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <ul class="list-group">
-          {% for u in users %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div class="d-flex align-items-center" style="min-width: 150px;">
-                {{ u.username }}
-              </div>
-              {% if u != request.user %}
-                  <div class="btn-group">
-                  {% if u.profile.user.is_active %}
-                  {% check_access "UsersModeratePage_ban" as access %}
-                  {% if access %}
-                    <a href="{% url 'moderate_ban_users' user_id=u.profile.id %}" class="btn btn-warning btn-sm me-5">Забанить</a>
-                  {% endif %}
-                  {% else %}
-                  {% check_access "UsersModeratePage_unban" as access %}
-                  {% if access %}
-                    <a href="{% url 'moderate_unban_users' user_id=u.profile.id %}" class="btn btn-success btn-sm me-5">Разбанить</a>
-                  {% endif %}
-                  {% endif %}
-                  {% check_access "UsersModeratePage_delete" as access %}
-                  {% if access %}
-                  <a href="{% url 'moderate_delete_users' user_id=u.profile.id %}" class="btn btn-danger btn-sm delete-btn" data-username="{{ u.username }}">Удалить</a>
-                  {% endif %}
-                </div>
-              {% else %}
-                <span class="badge bg-secondary mx-2">Вы</span>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Модерация пользователей</h2>
+  
+  <div class="row justify-content-center mb-4">
+    <div class="col-md-8">
+      <input type="text" id="searchInput" class="form-control" placeholder="Поиск по имени пользователя...">
     </div>
   </div>
 
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div id="userListContainer">
+        {% include "components/_user_list.html" with reviews=users %}
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="{% static 'js/confrim_delete_user.js' %}"></script>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const userListContainer = document.getElementById('userListContainer');
+    let debounceTimeout = null;
+
+    let currentSort = userListContainer.getAttribute('data-current-sort') || 'username';
+    let currentOrder = userListContainer.getAttribute('data-current-order') || 'asc';
+
+    function fetchUsers(query, page=1, sort=currentSort, order=currentOrder) {
+      const url = new URL("{% url 'search_users' %}", window.location.origin);
+      url.searchParams.append('q', query);
+      url.searchParams.append('page', page);
+      url.searchParams.append('sort', sort);
+      url.searchParams.append('order', order);
+
+      fetch(url, {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+        .then(response => response.text())
+        .then(html => {
+          userListContainer.innerHTML = html;
+
+          currentSort = userListContainer.getAttribute('data-current-sort') || 'username';
+          currentOrder = userListContainer.getAttribute('data-current-order') || 'asc';
+        })
+        .catch(error => {
+          console.error('Ошибка при получении результатов поиска:', error);
+        });
+    }
+
+    searchInput.addEventListener('input', function() {
+      const query = searchInput.value.trim();
+
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+
+      debounceTimeout = setTimeout(() => {
+        fetchUsers(query);
+      }, 300); 
+    });
+
+    userListContainer.addEventListener('click', function(e) {
+      if (e.target.tagName === 'A' && e.target.closest('.pagination')) {
+        e.preventDefault();
+        const url = new URL(e.target.href);
+        const query = searchInput.value.trim();
+        const page = url.searchParams.get('page') || 1;
+        const sort = url.searchParams.get('sort') || currentSort;
+        const order = url.searchParams.get('order') || currentOrder;
+
+        fetchUsers(query, page, sort, order);
+      }
+
+      if (e.target.classList.contains('sort-link') || e.target.closest('.sort-link')) {
+        e.preventDefault();
+        let sortLink = e.target;
+        if (!sortLink.classList.contains('sort-link')) {
+          sortLink = sortLink.closest('.sort-link');
+        }
+        const url = new URL(sortLink.href);
+        const sort = url.searchParams.get('sort') || 'username';
+        let order = url.searchParams.get('order') || 'asc';
+
+        currentSort = sort;
+        currentOrder = order;
+
+        const query = searchInput.value.trim();
+        fetchUsers(query, 1, sort, order);
+      }
+    });
+  });
+</script>
 {% endblock main %}
