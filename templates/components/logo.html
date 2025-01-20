@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="auto" height="auto">  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d95300" />
+      <stop offset="50%" stop-color="#ff7300" />
+      <stop offset="100%" stop-color="#ff8c00" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)" />
+    </filter>
+  </defs>
+
+  <rect width="240" height="100" fill="black" />
+  <rect x="240" width="160" height="100" fill="url(#gradient)" />
+
+  <polygon points="230,0 250,0 240,20" fill="#ff7300" /> 
+  <polygon points="230,100 250,100 240,80" fill="#ff7300" /> 
+
+  <text x="120" y="65" font-family="'Roadgeek 2005 Series 6B', sans-serif" font-size="50" fill="white" text-anchor="middle" filter="url(#shadow)">
+    Electro
+  </text>
+  <text x="320" y="65" font-family="'Deansgate', sans-serif" font-size="50" fill="black" text-anchor="middle"  filter="url(#shadow)">
+    Hub
+  </text>
+</svg>
