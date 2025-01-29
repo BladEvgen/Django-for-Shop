@@ -1,10 +1,12 @@
 import re
 import sqlite3
+import logging
 import datetime
 from pathlib import Path
 from time import perf_counter
 from django.shortcuts import render
 
+logger = logging.getLogger(__name__)
 DB_PATH = Path(__file__).resolve().parent.parent / "database" / "database.db"
 LOGS_PATH = Path(__file__).resolve().parent.parent / "log"
 
@@ -35,7 +37,7 @@ class Database:
                     connection.commit()
                 return result
             except Exception as error:
-                print(f"Error executing query {str(error)} ")
+                logging.error(f"Error executing query {str(error)} ")
                 return None
 
 
@@ -51,7 +53,8 @@ def create_tables():
         )
     """
     db.query(query_str, commit=True)
-
+    logger.info("Creating table error_log")
+    
     query_str = """
         CREATE TABLE IF NOT EXISTS performance_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,7 +65,8 @@ def create_tables():
         )
     """
     db.query(query_str, commit=True)
-
+    logger.info("Creating table performance_log")
+    
     query_str = """
         CREATE TABLE IF NOT EXISTS price_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,6 +77,7 @@ def create_tables():
         )
     """
     db.query(query_str, commit=True)
+    logger.info("Creating table price_data")
 
 
 def decorator_error_handler(view_func):
@@ -132,3 +137,55 @@ def password_check(password: str) -> bool:
         is not None
         else False
     )
+
+
+def transliterate(name):
+    slovar = {
+        "а": "a",
+        "б": "b",
+        "в": "v",
+        "г": "g",
+        "д": "d",
+        "е": "e",
+        "ё": "yo",
+        "ж": "zh",
+        "з": "z",
+        "и": "i",
+        "й": "y",
+        "к": "k",
+        "л": "l",
+        "м": "m",
+        "н": "n",
+        "о": "o",
+        "п": "p",
+        "р": "r",
+        "с": "s",
+        "т": "t",
+        "у": "u",
+        "ф": "f",
+        "х": "h",
+        "ц": "ts",
+        "ч": "ch",
+        "ш": "sh",
+        "щ": "sch",
+        "ъ": "",
+        "ы": "y",
+        "ь": "",
+        "э": "e",
+        "ю": "yu",
+        "я": "ya",
+        " ": " ",
+        "-": "-",
+        ".": ".",
+        ",": ",",
+        "!": "!",
+        "?": "?",
+        ":": ":",
+    }
+
+    name = name.lower()
+    translit = []
+    for letter in name:
+        translit.append(slovar.get(letter, letter))
+
+    return "".join(translit)

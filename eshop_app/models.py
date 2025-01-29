@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from django.db import models
 from django.utils import timezone
@@ -8,6 +9,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.core.validators import FileExtensionValidator
 
+logger = logging.getLogger(__name__)
 
 def user_avatar_path(instance, filename):
     username = instance.user.username
@@ -54,7 +56,7 @@ class UserProfile(models.Model):
                 return True
             return False
         except Exception as error:
-            print("error check_access: ", error)
+            logger.error("error check_access: ", error)
             return False
 
     def get_actions(self):
@@ -196,7 +198,7 @@ class Item(models.Model):
         blank=True,
         editable=True,
         default=None,
-        verbose_name="Фото Продукта",
+        verbose_name="Основное фото",
         validators=[
             FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "webp"])
         ],
@@ -226,17 +228,34 @@ class Item(models.Model):
             discount = ((self.price - self.discounted_price) / self.price) * 100
             return round(discount, 2)
         return 0.0
-
+    
+    def clean_title(self):
+        import re
+        return re.sub(r"[^\w\s-]", "", self.title).replace(" ", "_").lower()
+    
     def save(self, *args, **kwargs):
-        self.discount_percentage = self.calculate_discount_percentage()
-        print(
-            f"Цена: {self.price}, Скидоная Цена: {self.discounted_price}, Процентаж Скидки: {self.discount_percentage}"
-        )
-        super().save(*args, **kwargs)
+        import os
+        from eshop_app.utils import transliterate
+        from django.core.files.storage import default_storage
+        if self.image and not self.image.name.startswith("product_pictures/"):
+            extension = os.path.splitext(self.image.name)[1]
+            clean_title = transliterate(self.clean_title())
+            new_filename = f"product_pictures/{clean_title}{extension}".lower()
 
+            if default_storage.exists(new_filename):
+                count = 1
+                while default_storage.exists(f"product_pictures/{clean_title}_{count}{extension}"):
+                    count += 1
+                new_filename = f"product_pictures/{clean_title}_{count}{extension}"
+
+            self.image.name = new_filename
+
+        super().save(*args, **kwargs)
     def get_image_url(self):
         return self.image.url if self.image else None
-
+    def get_additional_images(self):
+        return [img.image.url for img in self.images.all()]
+    
     class Meta:
         app_label = "eshop_app"
         ordering = ("is_active", "title")
@@ -246,8 +265,37 @@ class Item(models.Model):
     def __str__(self):
         status = "Активен" if self.is_active else "Продано"
         return f"Товар(id={self.id}, Название={self.title}, Цена={self.price}, Категория={self.category.title}, Статус={status})"
+    
+class ItemImage(models.Model):
+    item = models.ForeignKey(
+        Item, related_name="images", on_delete=models.CASCADE, verbose_name="Товар"
+    )
+    image = models.ImageField(
+        upload_to="product_pictures/",
+        verbose_name="Дополнительное изображение",
+        validators=[
+            FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "webp"])
+        ],
+    )
 
+    class Meta:
+        verbose_name = "Дополнительное изображение"
+        verbose_name_plural = "Дополнительные изображения"
 
+    def __str__(self):
+        return f"Изображение для {self.item.title}"
+    
+    def save(self, *args, **kwargs):
+        import re
+        import os 
+        from eshop_app.utils import transliterate
+        if self.image:
+            extension = os.path.splitext(self.image.name)[1]
+            clean_title = transliterate(re.sub(r"[^\w\s-]", "", self.item.title))
+            self.image.name = f"{clean_title}_additional_{self.pk or ''}{extension}".lower()
+
+        super().save(*args, **kwargs)
+        
 class Cart(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name="Пользователь"
