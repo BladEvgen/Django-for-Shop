@@ -3,29 +3,124 @@
 {% block title %}Login{% endblock title %}
 
 {% block main %}
-<div class="container mt-5">
+<!-- Подключение Animate.css -->
+
+<style>
+    .login-container {
+        max-width: 450px;
+        margin: auto;
+        padding: 40px;
+        border-radius: 15px;
+        background: #ffffff;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        animation: fadeInDown 1s;
+    }
+
+    .form-control {
+        border-radius: 25px;
+        padding: 15px;
+        font-size: 1rem;
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
+
+    .btn-login {
+        border-radius: 25px;
+        font-size: 1.2rem;
+        padding: 12px;
+        width: 100%;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        transition: all 0.3s ease-in-out;
+        animation: bounceIn 1s;
+    }
+
+    .btn-login:hover {
+        background: linear-gradient(135deg, #0056b3, #003d80);
+        transform: scale(1.05);
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+
+    .password-wrapper .toggle-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        cursor: pointer;
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+
+    .password-wrapper .toggle-icon:hover {
+        color: #007bff;
+    }
+
+    .forgot-password {
+        text-align: center;
+        margin-top: 15px;
+        animation: fadeInUp 1.5s;
+    }
+
+    .forgot-password a {
+        color: #007bff;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+        color: #0056b3;
+    }
+</style>
+
+<div class="container mt-5 animate__animated animate__fadeIn">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="text-center">Login</h2>
-                </div>
-                <div class="card-body">
-                    <form method="post" action="{% url 'login' %}">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-lg d-block mx-auto">Login</button>
-                    </form>
-                </div>
+            <div class="login-container animate__animated animate__zoomIn">
+                <h2 class="text-center mb-4 animate__animated animate__pulse animate__infinite">Welcome Back!</h2>
+                <p class="text-center text-muted">Пожалуйста, введите свои учетные данные, чтобы войти.</p>
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3 password-wrapper">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control pl-5" id="password" name="password" required>
+                        <span class="toggle-icon" onclick="togglePasswordVisibility()">
+                            <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                        </span>
+                    </div>
+                    <button type="submit" class="btn btn-login">Войти</button>
+                    <div class="forgot-password">
+                        <a href="{% url 'password_reset_request' %}">Забыли пароль?</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+<!-- JavaScript для переключения видимости пароля -->
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('togglePasswordIcon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+</script>
 {% endblock main %}

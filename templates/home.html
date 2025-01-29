@@ -62,7 +62,7 @@
   <p class="fs-5 text-body-secondary">Самые лучшие в категориях:</p>
 </div>
 
-<!-- Карусель VIP-товаров для больших экранов (3 товара на слайд) -->
+<!-- Карусель VIP-товаров (3 товара на слайд для больших экранов) -->
 {% if vips|length > 3 %}
   <div id="vipCarouselLarge" class="carousel slide d-none d-lg-block" data-bs-ride="carousel">
     <!-- Индикаторы -->
@@ -75,33 +75,31 @@
     <!-- Карусельные слайды -->
     <div class="carousel-inner">
       {% for chunk in vips|chunked:3 %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="carousel-item {% if forloop.first %}active{% endif %} animate__animated animate__fadeIn">
           <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-3 text-center justify-content-center">
             {% for v in chunk %}
               <div class="col">
-                <div class="card mb-4 rounded-3 shadow-sm">
-                  <div>
+                <div class="card mb-4 rounded-3 shadow-sm animate__animated animate__pulse animate__slow">
+                  <div class="overflow-hidden">
                     <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}">
                   </div>
                   <div class="card-header py-3">
-                    <h4 class="my-0 fw-normal">{{ v.article.title }}</h4>
+                    <h4 class="my-0 fw-normal animate__animated animate__fadeInDown">{{ v.article.title }}</h4>
                   </div>
                   <div class="card-body">
-                    <h1 class="card-title pricing-card-title">
+                    <h1 class="card-title pricing-card-title animate__animated animate__zoomIn">
                       {% if v.article.discounted_price %}
                         {% digit_beautify v.article.discounted_price as formatted_discounted_price %}
-                        {{ formatted_discounted_price }}
-                        <small class="text-body-secondary fw-light">₸</small>
+                        {{ formatted_discounted_price }} <small class="text-body-secondary fw-light">₸</small>
                       {% else %}
                         {% digit_beautify v.article.price as formatted_price %}
-                        {{ formatted_price }}
-                        <small class="text-body-secondary fw-light">₸</small>
+                        {{ formatted_price }} <small class="text-body-secondary fw-light">₸</small>
                       {% endif %}
                     </h1>
-                    <ul class="list-unstyled mt-3 mb-4">
+                    <ul class="list-unstyled mt-3 mb-4 animate__animated animate__fadeInUp">
                       <li>{{ v.article.description|custom_cut:50 }}</li>
                     </ul>
-                    <a href="{% url 'product_detail' v.article.id %}" type="button" class="w-100 btn btn-lg btn-outline-primary">Детали</a>
+                    <a href="{% url 'product_detail' v.article.id %}" class="w-100 btn btn-lg btn-outline-primary animate__animated animate__bounceIn">Детали</a>
                   </div>
                 </div>
               </div>
@@ -111,12 +109,12 @@
       {% endfor %}
     </div>
 
-    <!-- Контролы карусели -->
-    <button class="carousel-control-prev" type="button" data-bs-target="#vipCarouselLarge" data-bs-slide="prev">
+    <!-- Контролы карусели с анимацией -->
+    <button class="carousel-control-prev animate__animated animate__fadeInLeft" type="button" data-bs-target="#vipCarouselLarge" data-bs-slide="prev">
       <span class="carousel-control-prev-icon" aria-hidden="true"></span>
       <span class="visually-hidden">Предыдущий</span>
     </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#vipCarouselLarge" data-bs-slide="next">
+    <button class="carousel-control-next animate__animated animate__fadeInRight" type="button" data-bs-target="#vipCarouselLarge" data-bs-slide="next">
       <span class="carousel-control-next-icon" aria-hidden="true"></span>
       <span class="visually-hidden">Следующий</span>
     </button>
@@ -134,7 +132,7 @@
     <!-- Карусельные слайды -->
     <div class="carousel-inner">
       {% for v in vips %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="carousel-item {% if forloop.first %}active{% endif %} animate__animated animate__zoomIn">
           <div class="row">
             <div class="col-12 text-center">
               <div class="card mb-4 rounded-3 shadow-sm">
@@ -142,24 +140,22 @@
                   <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}">
                 </div>
                 <div class="card-header py-3">
-                  <h4 class="my-0 fw-normal">{{ v.article.title }}</h4>
+                  <h4 class="my-0 fw-normal animate__animated animate__fadeInDown">{{ v.article.title }}</h4>
                 </div>
                 <div class="card-body">
-                  <h1 class="card-title pricing-card-title">
+                  <h1 class="card-title pricing-card-title animate__animated animate__lightSpeedInLeft">
                     {% if v.article.discounted_price %}
                       {% digit_beautify v.article.discounted_price as formatted_discounted_price %}
-                      {{ formatted_discounted_price }}
-                      <small class="text-body-secondary fw-light">₸</small>
+                      {{ formatted_discounted_price }} <small class="text-body-secondary fw-light">₸</small>
                     {% else %}
                       {% digit_beautify v.article.price as formatted_price %}
-                      {{ formatted_price }}
-                      <small class="text-body-secondary fw-light">₸</small>
+                      {{ formatted_price }} <small class="text-body-secondary fw-light">₸</small>
                     {% endif %}
                   </h1>
-                  <ul class="list-unstyled mt-3 mb-4">
+                  <ul class="list-unstyled mt-3 mb-4 animate__animated animate__fadeInUp">
                     <li>{{ v.article.description|custom_cut:50 }}</li>
                   </ul>
-                  <a href="{% url 'product_detail' v.article.id %}" type="button" class="w-100 btn btn-lg btn-outline-primary">Детали</a>
+                  <a href="{% url 'product_detail' v.article.id %}" class="w-100 btn btn-lg btn-outline-primary animate__animated animate__flipInX">Детали</a>
                 </div>
               </div>
             </div>
@@ -167,8 +163,7 @@
         </div>
       {% endfor %}
     </div>
-
-    <!-- Контролы карусели -->
+     <!-- Контролы карусели -->
     <button class="carousel-control-prev" type="button" data-bs-target="#vipCarouselSmall" data-bs-slide="prev">
       <span class="carousel-control-prev-icon" aria-hidden="true"></span>
       <span class="visually-hidden">Предыдущий</span>
@@ -216,6 +211,7 @@
     {% endfor %}
   </div>
 {% endif %}
+
 
 <hr />
 

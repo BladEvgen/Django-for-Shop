@@ -216,6 +216,36 @@ h5.card-title {
     border-color: #007bff;
     opacity: 1 !important;
 }
+
+.btn-outline-primary {
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    border-radius: 30px;
+}
+
+.btn-outline-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center; /* Центрирование кнопок */
+}
+
+.action-buttons-container .btn {
+    flex: 1 1 auto; /* Кнопки растягиваются равномерно */
+    min-width: 150px; /* Минимальная ширина для кнопок */
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .action-buttons-container {
+        flex-direction: column; /* Вертикальное расположение кнопок */
+        gap: 15px;
+    }
+}
 </style>
 <div class="container mt-5">
     <h2 class="mb-4 text-center">
@@ -229,13 +259,13 @@ h5.card-title {
 
     <div class="text-center mb-4">
     {% if additional_images %}
-        <div id="productCarousel" class="carousel slide" data-bs-ride="false">
+        <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <div class="carousel-item active">
                     <div class="carousel-image-wrapper">
                         <img src="{% item_image_url product %}" 
                              alt="{{ product.title }}" 
-                             class="d-block mx-auto">
+                             class="d-block mx-auto animate__animated animate__zoomIn">
                     </div>
                 </div>
                 {% for img in additional_images %}
@@ -243,7 +273,7 @@ h5.card-title {
                     <div class="carousel-image-wrapper">
                         <img src="{{ img.image.url }}" 
                              alt="Дополнительное изображение {{ forloop.counter }}" 
-                             class="d-block mx-auto">
+                             class="d-block mx-auto animate__animated animate__fadeIn">
                     </div>
                 </div>
                 {% endfor %}
@@ -304,12 +334,19 @@ h5.card-title {
                     </span>
                 </div>
                 {% endif %}
-                <form method="post" action="{% url 'add_to_cart' product.id %}" class="d-inline">
+            <div class="action-buttons-container">
+                <form method="post" action="{% url 'add_to_cart' product.id %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-primary btn-lg shadow">
+                    <button type="submit" class="btn btn-primary shadow">
                         <i class="fas fa-shopping-cart"></i> Добавить в корзину
                     </button>
                 </form>
+                {% if request.user != product.author %}
+                    <button class="btn btn-outline-primary shadow" 
+                            onclick="openChat('{{ product.author.username }}', '{{ product.id }}')">
+                        <i class="fa-solid fa-comments"></i> Чат с продавцом
+                    </button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -340,6 +377,7 @@ h5.card-title {
     </div>
 
     {% if user.is_authenticated %}
+
     <div class="card shadow-sm p-4">
     <h4 class="text-center text-primary mb-4">Написать отзыв</h4>
     <form method="post" action="{% url 'add_review' product.id %}">

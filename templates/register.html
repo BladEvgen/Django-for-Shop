@@ -2,61 +2,112 @@
 {% load static %}
 {% block title %}Register{% endblock title %}
 {% block main %}
-<div class="container mt-5">
+<style>
+    .register-container {
+        max-width: 500px;
+        margin: auto;
+        padding: 40px;
+        border-radius: 15px;
+        background: #ffffff;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        animation: fadeInDown 1s;
+    }
+
+    .form-control {
+        border-radius: 25px;
+        padding: 15px;
+        font-size: 1rem;
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
+
+    .btn-register {
+        border-radius: 25px;
+        font-size: 1.2rem;
+        padding: 12px;
+        width: 100%;
+        background: linear-gradient(135deg, #28a745, #218838);
+        color: white;
+        transition: background 0.3s ease, transform 0.2s;
+        animation: bounceIn 1s;
+    }
+
+    .btn-register:hover {
+        background: linear-gradient(135deg, #218838, #1e7e34);
+        transform: scale(1.05);
+    }
+
+    .input-group .btn {
+        border-radius: 25px;
+    }
+    
+    .progress {
+        height: 10px;
+        border-radius: 10px;
+    }
+    
+    .password-strength {
+        transition: width 0.3s ease;
+    }
+</style>
+
+<div class="container mt-5 animate__animated animate__fadeIn">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="text-center">Register</h2>
-                </div>
-                <div class="card-body">
-                    {% if error %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ error }}
+            <div class="register-container animate__animated animate__zoomIn">
+                <h2 class="text-center mb-4 animate__animated animate__pulse animate__infinite">Join Us!</h2>
+                <p class="text-center text-muted">Создайте свой аккаунт и начните прямо сейчас.</p>
+                {% if error %}
+                    <div class="alert alert-danger animate__animated animate__shakeX" role="alert">
+                        {{ error }}
+                    </div>
+                {% endif %}
+                <form method="post" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
-                    {% endif %}
-                    <form method="post" action="{% url 'register' %}">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="password" name="password" required>
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirm_password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                        </div>
-                        <small id="passwordHelp" class="form-text text-muted"></small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Подтвердите пароль</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <small id="passwordHelp" class="form-text text-muted"></small>
 
-                        <div class="progress mt-2" style="height: 10px;">
-                            <div id="passwordStrength" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
+                    <div class="progress mt-2">
+                        <div id="passwordStrength" class="progress-bar password-strength" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small id="passwordTip" class="form-text text-muted"></small>
 
-                        <small id="passwordTip" class="form-text text-muted"></small>
-
-                        <div class="m-3">
-                            <button type="submit" class="btn btn-success btn-lg d-block mx-auto" id="registerBtn" disabled>Register</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-register" id="registerBtn" disabled>Зарегистрироваться</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
 <script src="{% static 'js/validate_password.js' %}"></script>
 <script>
     document.getElementById("togglePassword").addEventListener("click", function () {
         var passwordInput = document.getElementById("password");
+        var confirmPasswordInput = document.getElementById("confirm_password");
         var type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
         passwordInput.setAttribute("type", type);
+        confirmPasswordInput.setAttribute("type", type);
     });
 </script>
 {% endblock main %}
