@@ -14,6 +14,16 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     # * User Profile
     path("profile/<str:username>/", views.ProfileView.as_view(), name="profile"),
+    path(
+        "password-reset/",
+        views.password_reset_request_view,
+        name="password_reset_request",
+    ),
+    path(
+        "password-reset/<str:token>/",
+        views.password_reset_confirm_view,
+        name="password_reset_confirm",
+    ),
     # * Item-related URLs
     path("item/<str:item_slug>/", views.item, name="item"),
     path("create_item/", views.create_item, name="create_item"),

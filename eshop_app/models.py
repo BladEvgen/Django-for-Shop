@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
+from django.utils.crypto import get_random_string
 from django.core.validators import FileExtensionValidator
 
 logger = logging.getLogger(__name__)
@@ -587,3 +588,93 @@ class Message(models.Model):
             self.content[:30] + "..." if len(self.content) > 30 else self.content
         )
         return f"Сообщение от {self.user.username} в {self.room.name}: {truncated_content} ({self.date_added})"
+
+
+
+
+class PasswordResetTokenManager(models.Manager):
+    def mark_as_used(self, token):
+        token_obj = self.filter(token=token, _used=False).first()
+        if token_obj and token_obj.is_valid():
+            token_obj._used = True
+            token_obj.save(update_fields=["_used"])
+            return True
+        return False
+
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="Пользователь"
+    )
+    token = models.CharField(max_length=64, unique=True, verbose_name="Токен")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    _used = models.BooleanField(default=False, verbose_name="Статус использования")
+
+    objects = PasswordResetTokenManager()
+
+    @property
+    def used(self):
+        return self._used
+
+    def is_valid(self):
+        expiration_time = timezone.now() - timezone.timedelta(hours=1)
+        return self.created_at > expiration_time and not self._used
+
+    @staticmethod
+    def generate_token(user):
+        token = get_random_string(64)
+        PasswordResetToken.objects.create(user=user, token=token)
+        return token
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            original = PasswordResetToken.objects.get(pk=self.pk)
+            if original.token != self.token:
+                self.token = original.token
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Токен для сброса пароля"
+        verbose_name_plural = "Токены для сброса паролей"
+
+
+class PasswordResetRequestLog(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="Пользователь"
+    )
+    ip_address = models.GenericIPAddressField(verbose_name="IP-адрес")
+    requested_at = models.DateTimeField(auto_now_add=True, verbose_name="Время запроса")
+
+    @staticmethod
+    def is_recent_request(user, ip_address):
+        five_minutes_ago = timezone.now() - timezone.timedelta(minutes=5)
+        return PasswordResetRequestLog.objects.filter(
+            user=user, ip_address=ip_address, requested_at__gte=five_minutes_ago
+        ).exists()
+
+    @staticmethod
+    def get_last_request_time(user, ip_address):
+        last_request = (
+            PasswordResetRequestLog.objects.filter(user=user, ip_address=ip_address)
+            .order_by("-requested_at")
+            .first()
+        )
+        return last_request.requested_at if last_request else None
+
+    @staticmethod
+    def log_request(user, ip_address):
+        PasswordResetRequestLog.objects.create(user=user, ip_address=ip_address)
+
+    @staticmethod
+    def can_request_again(user, ip_address):
+        last_request_time = PasswordResetRequestLog.get_last_request_time(
+            user, ip_address
+        )
+        if not last_request_time:
+            return True
+        return timezone.now() >= last_request_time + timezone.timedelta(minutes=5)
+
+    class Meta:
+        verbose_name = "Лог запросов на сброс пароля"
+        verbose_name_plural = "Логи запросов на сброс пароля"
+

@@ -17,9 +17,11 @@ from django.views.generic import (
     TemplateView,
 )
 import logging
+from eshop_app import utils
 from eshop_app import models
 from django.db.models import Q
 from django.urls import reverse
+from django.utils import timezone
 from django.contrib import messages
 from django.http import HttpResponse
 from django.utils.translation import activate
@@ -885,3 +887,76 @@ def delete_item_image(request, image_id):
             return JsonResponse({'success': False, 'error': f'Ошибка при удалении: {str(e)}'}, status=500)
     logger.warning("Недопустимый метод запроса")
     return JsonResponse({'success': False, 'error': 'Недопустимый метод запроса.'}, status=405)
+
+
+
+def password_reset_request_view(request):
+    if request.method == "POST":
+        identifier = request.POST.get("identifier")
+        ip_address = utils.get_client_ip(request)
+        logger.error(str(ip_address))
+        user = (
+            User.objects.filter(username=identifier).first()
+            or User.objects.filter(email=identifier).first()
+        )
+
+        user_timezone = utils.get_user_timezone(request)
+
+        if user:
+            last_request_time = models.PasswordResetRequestLog.get_last_request_time(
+                user, ip_address
+            )
+            if not models.PasswordResetRequestLog.can_request_again(user, ip_address):
+                next_possible_time = timezone.localtime(
+                    last_request_time + timezone.timedelta(minutes=5), user_timezone
+                )
+                last_request_time_local = timezone.localtime(
+                    last_request_time, user_timezone
+                )
+                messages.warning(
+                    request,
+                    f"Запрос уже был отправлен. Повторный запрос возможен в {next_possible_time.strftime('%H:%M:%S %Z')} ({next_possible_time.tzinfo}). Последний запрос был в {last_request_time_local.strftime('%H:%M:%S %Z')} ({last_request_time_local.tzinfo}).",
+                )
+            else:
+                utils.send_password_reset_email(user, request)
+                models.PasswordResetRequestLog.log_request(user, ip_address)
+                current_time_local = timezone.localtime(timezone.now(), user_timezone)
+                messages.success(
+                    request,
+                    f"Если пользователь существует, ссылка для сброса пароля была отправлена на его электронную почту. Последний запрос был в {current_time_local.strftime('%H:%M:%S %Z')} ({current_time_local.tzinfo}).",
+                )
+        else:
+            messages.info(
+                request,
+                "Если пользователь существует, ссылка для сброса пароля была отправлена на его электронную почту.",
+            )
+
+        return redirect("password_reset_request")
+
+    return render(request, "password_reset_request.html")
+
+
+def password_reset_confirm_view(request, token):
+    reset_token = get_object_or_404(models.PasswordResetToken, token=token)
+
+    if not reset_token.is_valid():
+        messages.error(request, "Этот токен для сброса пароля больше не действителен.")
+        return redirect("password_reset_request")
+
+    if request.method == "POST":
+        new_password = request.POST.get("password")
+        user = reset_token.user
+        user.set_password(new_password)
+        user.save()
+
+        if models.PasswordResetToken.objects.mark_as_used(token):
+            messages.success(
+                request,
+                "Пароль успешно сброшен. Вы можете войти в систему с новым паролем.",
+            )
+            return redirect("login")
+        else:
+            messages.error(request, "Ошибка при обновлении токена. Попробуйте снова.")
+            return redirect("password_reset_confirm", token=token)
+
+    return render(request, "password_reset_confirm.html", {"token": token})

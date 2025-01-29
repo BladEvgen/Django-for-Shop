@@ -1,10 +1,17 @@
 import re
+import pytz
 import sqlite3
 import logging
 import datetime
 from pathlib import Path
+from eshop_app import models
 from time import perf_counter
+from django.urls import reverse
+from django.conf import settings
 from django.shortcuts import render
+from django.core.mail import send_mail
+from django.utils.html import format_html
+
 
 logger = logging.getLogger(__name__)
 DB_PATH = Path(__file__).resolve().parent.parent / "database" / "database.db"
@@ -189,3 +196,69 @@ def transliterate(name):
         translit.append(slovar.get(letter, letter))
 
     return "".join(translit)
+
+def send_password_reset_email(user, request):
+    reset_link = f"{request.scheme}://{request.get_host()}{reverse('password_reset_confirm', args=[models.PasswordResetToken.generate_token(user)])}"
+
+    subject = "Инструкция по сбросу пароля"
+    html_message = format_html(
+        """
+        <div style="font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ececec; border-radius: 10px; background-color: #ffffff;">
+            <h2 style="color: #007bff; text-align: center; margin-bottom: 20px;">Сброс пароля</h2>
+            <p style="color: #333; line-height: 1.6; margin-bottom: 20px; text-align: center;">
+                Здравствуйте, {username}. Вы запросили сброс пароля для своего аккаунта. 
+                Пожалуйста, нажмите кнопку ниже, чтобы сбросить пароль.
+            </p>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <a href="{reset_link}" style="display: inline-block; padding: 15px 30px; color: #ffffff; background-color: #007bff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;">
+                    Сбросить пароль
+                </a>
+            </div>
+            <p style="color: #555; line-height: 1.6; margin-bottom: 20px; text-align: center;">
+                Ссылка для сброса пароля действительна в течение <strong>1 часа</strong>. Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо.
+            </p>
+            <hr style="border: none; border-top: 1px solid #ececec; margin: 30px 0;">
+            <p style="font-size: 12px; color: #999; text-align: center;">
+                Мы рады помочь вам сохранить безопасность вашего аккаунта. 
+            </p>
+        </div>
+        """,
+        username=user.username,
+        reset_link=reset_link,
+    )
+
+    plain_message = (
+        f"Здравствуйте, {user.username}!\n\n"
+        "Вы получили это письмо, потому что был запрошен сброс пароля для вашего аккаунта.\n\n"
+        f"Для сброса пароля перейдите по следующей ссылке: {reset_link}\n\n"
+        "Эта ссылка будет действительна в течение 1 часа. Для вашей безопасности не передавайте эту ссылку другим лицам.\n\n"
+        "Если вы не запрашивали сброс пароля, проигнорируйте это письмо, и ваш пароль останется неизменным.\n\n"
+        "С уважением,\n"
+        "Команда поддержки."
+    )
+
+    send_mail(
+        subject,
+        plain_message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        html_message=html_message,
+    )
+
+
+def get_client_ip(request):
+    """Get the client IP address from the request, considering proxy setups."""
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+    return ip
+
+
+
+def get_user_timezone(request):
+    user_timezone = request.session.get("timezone")
+    if not user_timezone:
+        user_timezone = settings.TIME_ZONE
+    return pytz.timezone(user_timezone)
