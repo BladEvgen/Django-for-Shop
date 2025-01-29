@@ -3,131 +3,412 @@
 {% load static %}
 {% block title %}Product Detail{% endblock title %}
 {% block main %}
+<style>
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-3px); 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.old-price {
+    font-size: 1.1rem;
+}
+
+.new-price {
+    font-size: 1.5rem;
+}
+
+.btn-primary, .btn-success {
+    border-radius: 30px;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover, .btn-success:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.fa-thumbs-up, .fa-thumbs-down {
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.3s ease;
+}
+
+.fa-thumbs-up:hover {
+    transform: scale(1.2);
+    color: #198754;
+}
+
+.fa-thumbs-down:hover {
+    transform: scale(1.2);
+    color: #dc3545;
+}
+
+textarea.form-control {
+    border: 2px solid #ced4da;
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.3s ease;
+}
+
+textarea.form-control:focus {
+    border-color: #198754;
+    box-shadow: 0 0 5px rgba(25, 135, 84, 0.5);
+}
+
+.review-container {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+}
+
+.review-container:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.review-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.review-text p {
+    margin-bottom: 10px;
+}
+
+.action-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.action-buttons .btn-action {
+    font-size: 0.9em;
+    padding: 5px 10px;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.action-buttons .btn-action:hover {
+    transform: scale(1.05);
+}
+
+.review-container img {
+    border: 2px solid #007bff;
+    object-fit: cover;
+}
+
+h5.card-title {
+    border-bottom: 2px solid #007bff;
+    display: inline-block;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    color: #007bff;
+}
+.review-container h5 {
+    margin-bottom: 5px;
+    font-size: 1.2em;
+    color: #007bff;
+}
+
+.review-container p {
+    margin-bottom: 5px;
+    line-height: 1.5;
+    font-size: 0.95em;
+}
+
+.review-container .toggle-content-btn {
+    font-size: 0.9em;
+    color: #007bff;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.review-container .toggle-content-btn:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .review-container {
+        padding: 15px;
+    }
+
+    .review-container img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .review-container h5 {
+        font-size: 1em;
+    }
+
+    .review-container p {
+        font-size: 0.9em;
+    }
+    .carousel-image-wrapper {
+        height: 300px; 
+    }
+}
+.card-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #495057;
+}
+
+.carousel-image-wrapper {
+    width: 100%;
+    max-width: 450px; 
+    height: 450px; 
+    overflow: hidden;
+    position: relative;
+    margin: 0 auto;
+}
+.carousel-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; 
+}
+
+.custom-carousel-btn {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+    z-index: 5;
+}
+
+.custom-carousel-btn:hover {
+    opacity: 1;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 10px;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 2px solid transparent;
+    object-fit: contain;
+    opacity: 0.8;
+    transition: border-color 0.3s ease, opacity 0.3s ease;
+}
+
+.thumbnail:hover, .active-thumbnail {
+    border-color: #007bff;
+    opacity: 1 !important;
+}
+</style>
 <div class="container mt-5">
-    
-    <h2 class="mb-4 text-center">{{ product.title }}           
-        {%if request.user == product.author%}
-                <a href="{%url 'modify_item' product.id%}" id="changeColor" class="text-warning">
-                    <i class="fas fa-wrench me-2" style="cursor: pointer; font-size: 1.5em;"></i>
-                </a>
-            {%endif%}
-        </h2> 
-        <div class="text-center m-3">
-            <img src="{% item_image_url product %}" alt="{{ product.title }}" class="img-fluid" style="max-width: 450; max-height: 450px;">
-        </div>
-    <div class="card">
-        <div class="card-body">
-
-            <h5 class="card-title">Описание</h5>
-            <p class="card-text">{{ product.description }}</p>
-            
-            {% if product.discounted_price %}
-                <span class="old-price">{% digit_beautify product.price %} ₸</span>
-                <span class="new-price fw-bold">{% digit_beautify product.discounted_price %} ₸</span>
-                <span class="discount-percentage fw-bold">({{ product.discount_percentage }}% off)</span>
-            {% else %}
-                <span class="price fw-bold">{% digit_beautify product.price %}  ₸</span>
-            {% endif %}
-        </div>
-        <form class="d-flex justify-content-center mb-3" method="post" action="{% url 'add_to_cart' product.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary ">
-                <i class="fas fa-shopping-cart"></i> Добавить в корзину
-            </button>
-        </form>
-
-    </div>
-    {% if user.is_authenticated %}
-        {% if request.user != product.author %}
-            <a href="#" class="chat-icon display-5" onclick="openChat('{{ product.author.username }}', '{{ product.id }}')">
-                <i class="fa-solid fa-comment"></i>
-            </a>
+    <h2 class="mb-4 text-center">
+        {{ product.title }}           
+        {% if request.user == product.author %}
+        <a href="{% url 'modify_item' product.id %}" class="text-warning">
+            <i class="fas fa-wrench ms-2" style="cursor: pointer; font-size: 1.5em;"></i>
+        </a>
         {% endif %}
-        <div class="mt-4">
-            {% if is_my_rating == 1 %}
-                <a href="{% url 'rating' product.id '1' %}"><i class="row fa-solid fa-thumbs-up text-success display-6 m-1 p-3"></i></a>
-            {% else %}
-                <a href="{% url 'rating' product.id '1' %}"><i class="row fa-regular fa-thumbs-up text-success display-6 m-1 p-3"></i></a>
-            {% endif %}
-            {%if total_rating_value < 0 %}
-                <div class="row display-6 text-danger m-1 p-1">Рейтинг товара: {{ total_rating_value }}</div>
-            {%else%}
-                <div class="row display-6 text-success m-1 p-1">Рейтинг товара: {{ total_rating_value }}</div>
-            {%endif%}
+    </h2>
 
-            {% if is_my_rating == -1 %}
-                <a href="{% url 'rating' product.id '-1' %}"><i class="row fa-solid fa-thumbs-down display-6 text-danger m-1 p-3"></i></a>
-            {% else %}
-                <a href="{% url 'rating' product.id '-1' %}"><i class="row fa-regular fa-thumbs-down display-6 text-danger m-1 p-3"></i></a>
-            {% endif %}
-            <h4>Написать отзыв</h4>
-            <form method="post" action="{% url 'add_review' product.id %}">
-                {% csrf_token %}
-                <textarea name="content" class="form-control mb-2" placeholder="оставьте ваш отзыв здесь" required></textarea>
-                <button type="submit" class="btn btn-primary">Подтвердить</button>
-            </form>
-            <div class="display-6 text-danger m-1 p-1">{{ total_rating_value.dislikes }}</div>
+    <div class="text-center mb-4">
+    {% if additional_images %}
+        <div id="productCarousel" class="carousel slide" data-bs-ride="false">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="carousel-image-wrapper">
+                        <img src="{% item_image_url product %}" 
+                             alt="{{ product.title }}" 
+                             class="d-block mx-auto">
+                    </div>
+                </div>
+                {% for img in additional_images %}
+                <div class="carousel-item">
+                    <div class="carousel-image-wrapper">
+                        <img src="{{ img.image.url }}" 
+                             alt="Дополнительное изображение {{ forloop.counter }}" 
+                             class="d-block mx-auto">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev custom-carousel-btn" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Предыдущий</span>
+            </button>
+            <button class="carousel-control-next custom-carousel-btn" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Следующий</span>
+            </button>
+        </div>
+        
+        <div class="d-flex justify-content-center mt-3">
+            <img src="{% item_image_url product %}" 
+                onclick="setMainImage(this)" 
+                class="thumbnail active-thumbnail" 
+                style="cursor: pointer;">
+
+            {% for img in additional_images %}
+            <img src="{{ img.image.url }}" 
+                onclick="setMainImage(this)" 
+                class="thumbnail" 
+                style="cursor: pointer;">
+            {% endfor %}
         </div>
     {% else %}
-        {%if total_rating_value < 0 %}
-                <div class=" row display-6 text-danger m-1 p-1">Рейтинг товара: {{ total_rating_value }}</div>
-            {%else%}
-                <div class="row display-6 text-success m-1 p-1">Рейтинг товара: {{ total_rating_value }}</div>
-            {%endif%}
-        <p class="mt-4"> <a href="{% url 'login' %}" class="styled-link">Войдите</a> чтобы оставить отзыв</p>
+        <div class="carousel-image-wrapper mx-auto">
+            <img src="{% item_image_url product %}" 
+                 alt="{{ product.title }}" 
+                 class="d-block mx-auto">
+        </div>
     {% endif %}
-    <div class="mt-4">
-    <h4>Отзывы</h4>
-    {% for review in reviews %}    
-        <div class="d-flex review-container flex-row-reverse">
-            <div class="review-buttons d-flex justify-content-end mt-2">
-                {% if user.is_authenticated and user == review.user %}
-                    <form method="post" action="{% url 'delete_review' product.id %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="review_id" value="{{ review.id }}">
-                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                        <button class="btn btn-outline-none text-danger" style="cursor: pointer; font-size: 1.5em;" onclick="return confirm('Are you sure you want to delete this review?')">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </form>
+</div>
+
+    <div class="card shadow-sm p-4 mb-5">
+        <div class="card-body">
+            <h5 class="card-title text-uppercase fw-bold">Описание</h5>
+            <p class="card-text text-secondary">{{ product.description|linebreaks }}</p>
+            <div class="d-flex align-items-center justify-content-between">
+                {% if product.discounted_price %}
+                <div>
+                    <span class="old-price text-decoration-line-through text-muted me-2">
+                        {% digit_beautify product.price %} ₸
+                    </span>
+                    <span class="new-price text-danger fw-bold me-2">
+                        {% digit_beautify product.discounted_price %} ₸
+                    </span>
+                    <span class="discount-percentage text-success fw-bold">
+                        ({{ product.discount_percentage }}% off)
+                    </span>
+                </div>
+                {% else %}
+                <div>
+                    <span class="price text-primary fw-bold">
+                        {% digit_beautify product.price %} ₸
+                    </span>
+                </div>
                 {% endif %}
+                <form method="post" action="{% url 'add_to_cart' product.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-lg shadow">
+                        <i class="fas fa-shopping-cart"></i> Добавить в корзину
+                    </button>
+                </form>
             </div>
         </div>
-        <div class="review-container">
-            <div class="media mb-3 review-content">
-                <img src="{% if review.user.profile.avatar %}{{ review.user.profile.get_avatar_url }}
-                {% else %}{% static 'media/png/user.png' %}
-                {% endif %}" class="mr-3 rounded-circle" alt="User Avatar" width="50">
-                <div class="media-body">
-                    <h5 class="mt-0">{{ review.user.username }}</h5
+    </div>
+
+    <div class="mt-4 text-center">
+        <div class="d-flex justify-content-center align-items-center mb-3">
+            <a href="{% url 'rating' product.id '1' %}" class="me-4">
+                {% if is_my_rating == 1 %}
+                <i class="fa-solid fa-thumbs-up text-success fs-3"></i>
+                {% else %}
+                <i class="fa-regular fa-thumbs-up text-success fs-3"></i>
+                {% endif %}
+            </a>
+            <h4 class="mb-0">
+                Рейтинг товара: 
+                <span class="text-primary fw-bold">
+                    {{ total_rating_value }}
+                </span>
+            </h4>
+            <a href="{% url 'rating' product.id '-1' %}" class="ms-4">
+                {% if is_my_rating == -1 %}
+                <i class="fa-solid fa-thumbs-down text-danger fs-3"></i>
+                {% else %}
+                <i class="fa-regular fa-thumbs-down text-danger fs-3"></i>
+                {% endif %}
+            </a>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="card shadow-sm p-4">
+    <h4 class="text-center text-primary mb-4">Написать отзыв</h4>
+    <form method="post" action="{% url 'add_review' product.id %}">
+        {% csrf_token %}
+        <textarea 
+            name="content" 
+            class="form-control mb-3 shadow-sm" 
+            placeholder="Оставьте ваш отзыв здесь..." 
+            required></textarea>
+        <div class="text-center">
+            <button type="submit" class="btn btn-success btn-lg shadow">
+                Подтвердить
+            </button>
+        </div>
+    </form>
+</div>
+
+    {% else %}
+    <div class="text-center mt-4">
+        <p class="text-muted">
+            <a href="{% url 'login' %}" class="text-primary fw-bold">Войдите</a>, чтобы оставить отзыв.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+
+<div class="review-section">
+    <h4 class="text-primary mb-4 text-center">Отзывы</h4>
+    {% for review in reviews %}
+    <div class="review-container position-relative">
+        <div class="d-flex align-items-start">
+            <img 
+                src="{% if review.user.profile.avatar %}{{ review.user.profile.get_avatar_url }}{% else %}{% static 'media/png/user.png' %}{% endif %}" 
+                alt="User Avatar" 
+                class="rounded-circle border border-primary me-3" 
+                width="60" 
+                height="60"
+            >
+            <div class="flex-grow-1">
+                <h5 class="fw-bold text-primary">{{ review.user.username }}</h5>
+                <p class="text-muted small mb-0">{% relative_time review.created_at %}</p>
+                <div class="review-text mt-2">
                     {% if review.content|length > 200 %}
-                        <p class="d-flex justify-content-center custom-justified">{{ review.content }}</p>
+                    <p class="short-content">{{ review.content|truncatechars:200 }}</p>
+                    <p class="full-content d-none">{{ review.content }}</p>
+                    <button class="btn btn-link toggle-content-btn text-primary p-0">Показать больше</button>
                     {% else %}
-                        <p>{{ review.content }}</p>
+                    <p>{{ review.content }}</p>
                     {% endif %}
-                    <p class="text-muted">{% relative_time review.created_at %}</p>
                 </div>
             </div>
         </div>
-
-        {% if user.is_authenticated and user.is_staff %}
-            <div class="review-buttons">
-                <form method="post" action="{% url 'product_detail' product.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="review_id" value="{{ review.id }}">
-                    {% if review.is_visible %}
-                        <input type="hidden" name="action" value="hide">
-                        <a href="#" class="styled-link" onclick="this.closest('form').submit(); return false;">Скрыть</a>
-                    {% else %}
-                        <input type="hidden" name="action" value="unhide">
-                        <a href="#" class="styled-link" onclick="this.closest('form').submit(); return false;">Показать</a>
-                    {% endif %}
-                </form>
-            </div>
-        {% endif %}
+        <div class="action-buttons">
+            {% if user.is_authenticated and user == review.user %}
+            <form method="post" action="{% url 'delete_review' product.id %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="review_id" value="{{ review.id }}">
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <button class="btn btn-danger btn-sm btn-action">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
     {% endfor %}
 </div>
-</div>
+</div>  
 <script>
     function openChat(authorUsername, itemId) {
         console.log('Attempting to create chat room...');
@@ -158,6 +439,69 @@
             }
         });
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggleButtons = document.querySelectorAll(".toggle-content-btn");
+
+        toggleButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const reviewText = this.closest(".review-text");
+                const shortContent = reviewText.querySelector(".short-content");
+                const fullContent = reviewText.querySelector(".full-content");
+
+                if (shortContent.classList.contains("d-none")) {
+                    shortContent.classList.remove("d-none");
+                    fullContent.classList.add("d-none");
+                    this.textContent = "Показать больше";
+                } else {
+                    shortContent.classList.add("d-none");
+                    fullContent.classList.remove("d-none");
+                    this.textContent = "Свернуть";
+                }
+            });
+        });
+    });
+
+function setMainImage(element) {
+    const thumbnails = document.querySelectorAll(".thumbnail");
+    const carousel = document.getElementById("productCarousel");
+    const carouselItems = document.querySelectorAll(".carousel-item");
+
+    thumbnails.forEach(thumbnail => thumbnail.classList.remove("active-thumbnail"));
+    element.classList.add("active-thumbnail");
+
+    let slideIndex = 0; // Начинаем с 0
+    const targetSrc = element.src.split('/').pop(); 
+
+    carouselItems.forEach((item, index) => {
+        const img = item.querySelector("img");
+        const imgSrc = img.src.split('/').pop(); 
+
+        if (imgSrc.toLowerCase().trim() === targetSrc.toLowerCase().trim()) {
+            slideIndex = index;
+        }
+    });
+
+    const bootstrapCarousel = bootstrap.Carousel.getInstance(carousel);
+    bootstrapCarousel.to(slideIndex); 
+}
+
+const productCarousel = document.getElementById('productCarousel');
+productCarousel.addEventListener('slide.bs.carousel', function (event) {
+    const thumbnails = document.querySelectorAll(".thumbnail");
+    const activeSlideIndex = event.to; // Индекс активного слайда
+
+    thumbnails.forEach(thumbnail => thumbnail.classList.remove("active-thumbnail"));
+
+    thumbnails[activeSlideIndex].classList.add("active-thumbnail");
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    var myCarousel = document.getElementById('productCarousel')
+    var carousel = new bootstrap.Carousel(myCarousel, {
+      interval: false 
+    })
+  })
 </script>
 {% include "components/paginator.html" %}
 <script src="{% static 'js/edit_profile_button.js' %}"></script>
