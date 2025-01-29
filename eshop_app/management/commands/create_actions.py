@@ -6,6 +6,7 @@ class Command(BaseCommand):
 
     ACTIONS = {
         "moder_seller": "Доступ к модерации продавцов.",
+        "moderate_category_items": "Модерация категорий",
         "UsersModeratePage_view": "Доступ к просмотру страницы модерации пользователей.",
         "ModerateSite": "Доступ к модерации сайта.",
         "CreateItemCategory": "Создание категории товаров.",
