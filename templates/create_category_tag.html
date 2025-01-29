@@ -2,27 +2,51 @@
 {% load django_app_filters_and_tags %}
 {% load static %}
 
-{% block title %}Создать элемент тэга{% endblock title %}
+{% block title %}Создать тэг{% endblock title %}
 
 {% block main %}
-  <div class="container mt-4">
-    <h2>Создать элемент тэга</h2>
-    <form method="post" action="{% url 'create_category_tag' %}" class="my-4">
-      {% csrf_token %}
-      <div class="form-group">
-        <label for="title">Название:</label>
-        <input type="text" name="title" class="form-control" required />
-      </div>
-      <div class="form-group">
-        <label for="slug">Ссылка (Slug):</label>
-        <input type="text" name="slug" class="form-control" required />
-        <small class="form-text text-muted">
-          Слаг (slug) - это URL-дружественная версия названия. Он должен быть в нижнем регистре, разделен дефисами и описательным. Должен быть написанн на Английском языке либо транскриптом, нельзя чтобы содержались русские символы.
-          <br>Пример: "creating-a-category-item"
-        </small>
-      </div>
-      <button type="submit" class="btn btn-primary mt-3">Создать</button>
-    </form>
-  </div>
-  <script src="{% static 'js/slug.js' %}"></script>
+<div class="container mt-5">
+    <h2 class="text-center text-primary mb-4">🏷️ Создать тэг</h2>
+    
+    <div class="card shadow-sm border-0 p-4">
+        <form method="post" action="{% url 'create_tag_item' %}" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <!-- Название -->
+            <div class="mb-3">
+                <label for="title" class="form-label">Название тэга:</label>
+                <input type="text" name="title" id="title" class="form-control" placeholder="Введите название тэга" required />
+                <div class="invalid-feedback">Пожалуйста, введите название тэга.</div>
+            </div>
+            <!-- Слаг -->
+            <div class="mb-3">
+                <label for="slug" class="form-label">Ссылка (Slug):</label>
+                <input type="text" name="slug" id="slug" class="form-control" placeholder="Введите slug" required />
+                <small class="form-text text-muted">
+                    Слаг должен быть написан на английском языке, в нижнем регистре и разделён дефисами.
+                    <br>Пример: "creating-a-category-tag".
+                </small>
+                <div class="invalid-feedback">Пожалуйста, введите корректный slug.</div>
+            </div>
+            <!-- Кнопка отправки -->
+            <button type="submit" class="btn btn-primary w-100 mt-3">Создать тэг</button>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/slug.js' %}"></script>
+<script>
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
 {% endblock main %}

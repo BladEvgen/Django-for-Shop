@@ -3,65 +3,94 @@
 {% load static %}
 
 {% block main %}
-  <div class="container mt-5">
-    <h2>Подтверждение заказа</h2>
+<div class="container mt-5">
+    <!-- Заголовок -->
+    <h2 class="text-center text-primary mb-4">🎉 Подтверждение заказа</h2>
 
-    <div class="alert alert-success" role="alert">
-      <p>Спасибо за ваш заказ! Ваша покупка подтверждена.</p>
+    <!-- Сообщение об успехе -->
+    <div class="alert alert-success text-center" role="alert">
+        <p class="mb-0">Спасибо за ваш заказ! Ваша покупка подтверждена.</p>
     </div>
 
-    <div class="card mt-4">
-      <div class="card-header">
-        Подробности заказа
-      </div>
-      <div class="card-body">
-        <p><strong>Номер заказа:</strong> {{ order.id }}</p>
-        <p><strong>Дата заказа:</strong> {{ order.date_created|date:"F d, Y H:i" }}</p>
-        <p><strong>Статус заказа:</strong> {{ order.status }}</p>
-        <p><strong>Покупатель:</strong> {{ order.user.get_full_name }}</p>
-        <p><strong>Контактная информация:</strong></p>
-        <ul>
-          <li>Фамилия: {{ order.user.last_name }}</li>
-          <li>Имя: {{ order.user.first_name }}</li>
-          <li>Номер телефона: {{ order.user.profile.phonenumber }}</li>
-          <li>Адресс доставки: {{ order.user.profile.address }}</li>
-        </ul>
-        <p><strong>Информция о товаре:</strong></p>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Товар</th>
-              <th>Колличество</th>
-              <th>Цена за единицу товара</th>
-              <th>Цена товара</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for order_item in order.order_items.all %}
-              <tr>
-                <td>{{ order_item.item.title }}</td>
-                <td class="text-center">{{ order_item.quantity }} шт</td>
-                <td class="text-center">
-                  {{ order_item.item.discounted_price|default:order_item.item.price }}
-                  <i class="fa-solid fa-tenge-sign" data-toggle="tooltip" data-placement="top" title="Kazakhstani Tenge"></i>
-                </td>
-                <td class="text-center">{{ order_item.calculate_item_total }} <i class="fa-solid fa-tenge-sign"></i></td>
-              </tr>
-            {% endfor %}
-            <tr>
-              <td colspan="3" class="text-right"><strong>Общая цена всех товаров:</strong></td>
-              <td class="text-center">{{ order.get_total_price }} <i class="fa-solid fa-tenge-sign"></i></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <!-- Карточка с подробностями заказа -->
+    <div class="card mt-4 shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">📜 Подробности заказа</h4>
+        </div>
+        <div class="card-body">
+            <!-- Основная информация -->
+            <div class="mb-3">
+                <p><strong>Номер заказа:</strong> {{ order.id }}</p>
+                <p><strong>Дата заказа:</strong> {{ order.date_created|date:"d F, Y H:i" }}</p>
+                <p><strong>Статус заказа:</strong> 
+                    <span class="badge bg-success">{{ order.status }}</span>
+                </p>
+            </div>
 
-    <script>
-      $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-      });
-    </script>
-    
-  </div>
+            <!-- Контактная информация -->
+            <h5 class="text-primary">👤 Контактная информация:</h5>
+            <ul class="list-group list-group-flush mb-4">
+                <li class="list-group-item"><strong>Фамилия:</strong> {{ order.user.last_name }}</li>
+                <li class="list-group-item"><strong>Имя:</strong> {{ order.user.first_name }}</li>
+                <li class="list-group-item"><strong>Телефон:</strong> {{ order.user.profile.phonenumber }}</li>
+                <li class="list-group-item"><strong>Адрес:</strong> {{ order.user.profile.address }}</li>
+            </ul>
+
+            <!-- Информация о товарах -->
+            <h5 class="text-primary">📦 Информация о товарах:</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mt-3">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Товар</th>
+                            <th class="text-center">Количество</th>
+                            <th class="text-center">Цена за единицу</th>
+                            <th class="text-center">Общая цена</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order_item in order.order_items.all %}
+                        <tr>
+                            <td>{{ order_item.item.title }}</td>
+                            <td class="text-center">{{ order_item.quantity }} шт</td>
+                            <td class="text-center">
+                                {{ order_item.item.discounted_price|default:order_item.item.price }} ₸
+                            </td>
+                            <td class="text-center">{{ order_item.calculate_item_total }} ₸</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="table-secondary">
+                            <td colspan="3" class="text-end"><strong>Общая стоимость:</strong></td>
+                            <td class="text-center"><strong>{{ order.get_total_price }} ₸</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрипт для тултипов -->
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+
+<!-- Стилизация -->
+<style>
+    .card-header {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .badge {
+        font-size: 1rem;
+        padding: 0.5em 0.75em;
+    }
+</style>
 {% endblock %}

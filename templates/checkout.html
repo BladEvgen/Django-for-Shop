@@ -1,75 +1,119 @@
 {% extends "components/base.html" %}
 {% load django_app_filters_and_tags %}
 {% load static %}
+
 {% block main %}
-  <div class="container mt-5">
-    <h2>Checkout</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">🛒 Оформление заказа</h2>
 
-    <form method="post" action="{% url 'checkout' %}" class="needs-validation" novalidate>
-      {% csrf_token %}
+    <div class="checkout-container p-4 rounded shadow-sm bg-white">
+        <form method="post" action="{% url 'checkout' %}" class="needs-validation" novalidate>
+            {% csrf_token %}
 
-      <div class="mb-3">
-        <label for="lastname" class="form-label">Фамилия:</label>
-        <input type="text" class="form-control" id="lastname" name="lastname" value="{{ user_profile.user.last_name }}" required>
-        <div class="invalid-feedback">
-          Пожалуйства введите правильную Фамилию.
-        </div>
-      </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="lastname" class="form-label">Фамилия:</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control" id="lastname" name="lastname"
+                               value="{{ user_profile.user.last_name }}" required>
+                        <div class="invalid-feedback">Введите корректную фамилию.</div>
+                    </div>
+                </div>
 
-      <div class="mb-3">
-        <label for="firstname" class="form-label">Имя:</label>
-          <input type="text" class="form-control" id="firstname" name="firstname" value="{{ user.first_name }}" required>
-        <div class="invalid-feedback">
-          Пожалуйства введите правильное Имя.
-        </div>
-      </div>
+                <div class="col-md-6 mb-3">
+                    <label for="firstname" class="form-label">Имя:</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control" id="firstname" name="firstname"
+                               value="{{ user.first_name }}" required>
+                        <div class="invalid-feedback">Введите корректное имя.</div>
+                    </div>
+                </div>
+            </div>
 
-      <div class="mb-3">
-        <label for="email" class="form-label">Email:</label>
-        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
-        <div class="invalid-feedback">
-          Пожалуйства введите правильный Email.
-        </div>
-      </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="email" name="email"
+                           value="{{ user.email }}" required>
+                    <div class="invalid-feedback">Введите корректный email.</div>
+                </div>
+            </div>
 
-      <div class="mb-3">
-        <label for="phonenumber" class="form-label">Номер телефона:</label>
-        <input type="tel" class="form-control" id="phonenumber" name="phonenumber" value="{{ user_profile.phonenumber }}" required>
-        <div class="invalid-feedback">
-          Пожалуйства введите правильный номер телефона.
-        </div>
-      </div>
+            <div class="mb-3">
+                <label for="phonenumber" class="form-label">Номер телефона:</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                    <input type="tel" class="form-control" id="phonenumber" name="phonenumber"
+                           value="{{ user_profile.phonenumber }}" required>
+                    <div class="invalid-feedback">Введите корректный номер телефона.</div>
+                </div>
+            </div>
 
-      <div class="mb-3">
-        <label for="address" class="form-label">Адресс доставки:</label>
-        <textarea class="form-control" id="address" name="address" required>{{ user_profile.address }}</textarea>
-        <div class="invalid-feedback">
-          Пожалуйства введите правильный адресс доставки.
-        </div>
-      </div>
+            <div class="mb-3">
+                <label for="address" class="form-label">Адрес доставки:</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                    <textarea class="form-control" id="address" name="address" required>{{ user_profile.address }}</textarea>
+                    <div class="invalid-feedback">Введите корректный адрес доставки.</div>
+                </div>
+            </div>
 
-      <button class="btn btn-primary" type="submit">Разместить заказ</button>
-    </form>
-  </div>
+            <div class="text-center">
+                <button class="btn btn-success btn-lg w-100" type="submit">
+                    <i class="fas fa-shopping-bag"></i> Разместить заказ
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
     (function () {
-      'use strict';
+        'use strict';
 
-      var forms = document.querySelectorAll('.needs-validation');
+        var forms = document.querySelectorAll('.needs-validation');
 
-      Array.from(forms).forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-          if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
+        Array.from(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
 
-          form.classList.add('was-validated');
-        }, false);
-      });
+                form.classList.add('was-validated');
+            }, false);
+        });
     })();
-  </script>
+</script>
+
+<style>
+    .checkout-container {
+        max-width: 600px;
+        margin: auto;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: 0;
+    }
+
+    .form-control {
+        border-left: 0;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+</style>
 
 {% endblock main %}

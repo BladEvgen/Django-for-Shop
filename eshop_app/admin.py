@@ -1,3 +1,4 @@
+from typing import Literal
 from django.contrib import admin
 from .models import (
     Vip,
@@ -38,7 +39,6 @@ class UserProfileAdmin(BaseAdmin):
 class ActionAdmin(BaseAdmin):
     list_display = ("id", "slug", "description")
     search_fields = ("slug", "description")
-    readonly_fields = ("slug",)  # Слаг защищён от изменений
 
 
 @admin.register(GroupExtend)

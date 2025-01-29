@@ -1,15 +1,117 @@
 {% extends "components/base.html" %}
 {% load django_app_filters_and_tags %}
 {% load static %}
-{% block title %}Moderate Site{% endblock title %}
+
+{% block title %}Модерация сайта{% endblock title %}
+
 {% block main %}
-  <div class="container mt-4">
-    <h2 class="mb-4">Moderate Site</h2>
+<div class="container mt-5">
+    <!-- Заголовок -->
+    <h2 class="text-center text-primary mb-4">⚙️ Модерация сайта</h2>
 
-    {% check_access "CreateItemCategory" as access %}
-      {% if access %}
-        <a href="{% url 'create_category_item' %}" class="btn btn-primary">Создать категорию товаров</a>
-      {% endif %}
+    <div class="row">
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            {% check_access "CreateItemCategory" as access %}
+            {% if access %}
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fas fa-boxes fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Категории товаров</h5>
+                    <p class="card-text text-muted">
+                        Управляйте категориями товаров, добавляйте или редактируйте их.
+                    </p>
+                    <a href="{% url 'create_category_item' %}" class="btn btn-primary btn-sm">
+                        Создать категорию
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
 
-  </div>
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            {% check_access "UsersModeratePage_view" as access %}
+            {% if access %}
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Управление пользователями</h5>
+                    <p class="card-text text-muted">
+                        Просматривайте и модерируйте список пользователей.
+                    </p>
+                    <a href="{% url 'moderate_users' %}" class="btn btn-primary btn-sm">
+                        Перейти к модерации
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            {% check_access "CreateItemTag" as access %}
+            {% if access %}
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fas fa-tags fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Тэги товаров</h5>
+                    <p class="card-text text-muted">
+                        Управляйте тэгами товаров, добавляйте или редактируйте их.
+                    </p>
+                    <a href="{% url 'create_tag_item' %}" class="btn btn-primary btn-sm">
+                        Создать Тэг
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            {% if request.user.is_authenticated and request.user.is_superuser %}
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="fas fa-cogs fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Настройки сайта</h5>
+                    <p class="card-text text-muted">
+                        Управляйте основными параметрами и настройками сайта.
+                    </p>
+                    <a href="{% url 'admin:index' %}" class="btn btn-primary btn-sm">
+                        Настроить сайт
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Стилизация -->
+<style>
+    .card {
+        border-radius: 12px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .card-text {
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+</style>
 {% endblock main %}

@@ -228,7 +228,7 @@
           <li class="mb-2 me-4">
             <h5>
               <a class="text-white text-decoration-none" href="{% url 'item' category.slug %}">
-                {{ category.title }}
+                {{ category.title|capfirst }}              
               </a>
             </h5>
           </li>

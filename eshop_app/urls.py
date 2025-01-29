@@ -37,6 +37,11 @@ urlpatterns = [
         views.CreateCategoryItemView.as_view(),
         name="create_category_item",
     ),
+        path(
+        "create_category_tag/",
+        views.CreateTagItemView.as_view(),
+        name="create_tag_item",
+    ),
     path("modify_item/<int:item_id>/", views.modify_item, name="modify_item"),
     path("user_items/", views.user_items, name="user_items"),
     path("rating/<str:item_id>/<str:is_like>/", views.rating, name="rating"),

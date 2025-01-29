@@ -56,7 +56,7 @@ def search(request):
 
 @decorator_error_handler
 def home(request):
-    categories = models.CategoryItem.objects.all()
+    categories = models.CategoryItem.objects.all().order_by('title')
     vips = (
         models.Vip.objects.all()
         .filter(
@@ -725,6 +725,30 @@ class CreateCategoryItemView(View):
 
         return render(request, self.template_name)
 
+class CreateTagItemView(View):
+    template_name = "create_category_tag.html"
+
+    @check_access_slug(slug="CreateItemTag")
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    @check_access_slug(slug="CreateItemTag")
+    def post(self, request, *args, **kwargs):
+        title = request.POST.get("title")
+        slug = request.POST.get("slug")
+
+        if title and slug:
+            try:
+                models.CategoryItem.objects.create(title=title, slug=slug)
+                messages.success(request, "Tag item created successfully.")
+                return redirect(reverse("moderate_tag_items"))
+            except Exception as e:
+                messages.error(request, f"Error creating category item: {e}")
+        else:
+            messages.error(request, "Both title and slug are required.")
+
+        return render(request, self.template_name)
+
 
 class ModerateSiteView(View):
     template_name = "moderate_site.html"
@@ -806,7 +830,7 @@ def checkout(request):
             item = cart_item.item
             quantity = cart_item.quantity
 
-            order_item = models.OrderItem.objects.create(
+            _ = models.OrderItem.objects.create(
                 order=order, item=item, quantity=quantity
             )
 

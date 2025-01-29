@@ -1,82 +1,84 @@
-<!-- components/_user_list.html -->
 {% load django_app_filters_and_tags %}
 
 {% if users %}
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered" id="userTable">
-            <thead class="table-light">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">
-                        <a href="?{% if search_query %}q={{ search_query }}&amp;{% endif %}sort=username&amp;order={% if current_sort == 'username' and current_order == 'asc' %}desc{% else %}asc{% endif %}" class="sort-link">
-                            Имя пользователя
-                            {% if current_sort == 'username' %}
-                                {% if current_order == 'asc' %}
-                                    <i class="fas fa-sort-up"></i>
-                                {% else %}
-                                    <i class="fas fa-sort-down"></i>
-                                {% endif %}
+<div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle" id="userTable">
+        <thead class="table-primary">
+            <tr>
+                <th scope="col" class="text-center">#</th>
+                <th scope="col">
+                    <a href="?{% if search_query %}q={{ search_query }}&amp;{% endif %}sort=username&amp;order={% if current_sort == 'username' and current_order == 'asc' %}desc{% else %}asc{% endif %}" class="sort-link">
+                        Имя пользователя
+                        {% if current_sort == 'username' %}
+                            {% if current_order == 'asc' %}
+                                <i class="fas fa-sort-up"></i>
                             {% else %}
-                                <i class="fas fa-sort"></i>
+                                <i class="fas fa-sort-down"></i>
                             {% endif %}
-                        </a>
-                    </th>
-                    <th scope="col">
-                        <a href="?{% if search_query %}q={{ search_query }}&amp;{% endif %}sort=date_joined&amp;order={% if current_sort == 'date_joined' and current_order == 'asc' %}desc{% else %}asc{% endif %}" class="sort-link">
-                            Дата создания
-                            {% if current_sort == 'date_joined' %}
-                                {% if current_order == 'asc' %}
-                                    <i class="fas fa-sort-up"></i>
-                                {% else %}
-                                    <i class="fas fa-sort-down"></i>
-                                {% endif %}
+                        {% else %}
+                            <i class="fas fa-sort"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th scope="col">
+                    <a href="?{% if search_query %}q={{ search_query }}&amp;{% endif %}sort=date_joined&amp;order={% if current_sort == 'date_joined' and current_order == 'asc' %}desc{% else %}asc{% endif %}" class="sort-link">
+                        Дата создания
+                        {% if current_sort == 'date_joined' %}
+                            {% if current_order == 'asc' %}
+                                <i class="fas fa-sort-up"></i>
                             {% else %}
-                                <i class="fas fa-sort"></i>
+                                <i class="fas fa-sort-down"></i>
                             {% endif %}
-                        </a>
-                    </th>
-                    <th scope="col">Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for u in users %}
-                    <tr data-username="{{ u.username|lower }}">
-                        <th scope="row">{{ forloop.counter }}</th>
-                        <td>{{ u.username }}</td>
-                        <td>
-                            <p class="text-muted">{% relative_time u.date_joined %}</p>
-                        </td>
-                        <td class="action-buttons">
-                            {% if u != request.user %}
-                                <div class="btn-group" role="group" aria-label="Действия">
-                                    {% if u.is_active %}
-                                        {% check_access "UsersModeratePage_ban" as access_ban %}
-                                        {% if access_ban %}
-                                            <a href="{% url 'moderate_ban_users' user_id=u.profile.id %}" class="btn btn-warning btn-sm me-2">Забанить</a>
-                                        {% endif %}
-                                    {% else %}
-                                        {% check_access "UsersModeratePage_unban" as access_unban %}
-                                        {% if access_unban %}
-                                            <a href="{% url 'moderate_unban_users' user_id=u.profile.id %}" class="btn btn-success btn-sm me-2">Разбанить</a>
-                                        {% endif %}
-                                    {% endif %}
-                                    
-                                    {% check_access "UsersModeratePage_delete" as access_delete %}
-                                    {% if access_delete %}
-                                        <a href="{% url 'moderate_delete_users' user_id=u.profile.id %}" class="btn btn-danger btn-sm delete-btn" data-username="{{ u.username }}">Удалить</a>
-                                    {% endif %}
-                                </div>
-                            {% else %}
-                                <span class="badge bg-secondary mx-2">Вы</span>
+                        {% else %}
+                            <i class="fas fa-sort"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="text-center">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr data-username="{{ u.username|lower }}">
+                <th scope="row" class="text-center">{{ forloop.counter }}</th>
+                <td>{{ u.username }}</td>
+                <td>
+                    <p class="text-muted small mb-0">{% relative_time u.date_joined %}</p>
+                </td>
+                <td class="text-center">
+                    {% if u != request.user %}
+                    <div class="btn-group" role="group" aria-label="Действия">
+                        {% if u.is_active %}
+                            {% check_access "UsersModeratePage_ban" as access_ban %}
+                            {% if access_ban %}
+                                <a href="{% url 'moderate_ban_users' user_id=u.profile.id %}" class="btn btn-warning btn-sm me-1">Забанить</a>
                             {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    
-    {% include "components/paginator.html" with reviews=users search_query=search_query current_sort=current_sort current_order=current_order %}
+                        {% else %}
+                            {% check_access "UsersModeratePage_unban" as access_unban %}
+                            {% if access_unban %}
+                                <a href="{% url 'moderate_unban_users' user_id=u.profile.id %}" class="btn btn-success btn-sm me-1">Разбанить</a>
+                            {% endif %}
+                        {% endif %}
+
+                        {% check_access "UsersModeratePage_delete" as access_delete %}
+                        {% if access_delete %}
+                            <a href="{% url 'moderate_delete_users' user_id=u.profile.id %}" class="btn btn-danger btn-sm delete-btn" data-username="{{ u.username }}">
+                                Удалить
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <span class="badge bg-secondary">Вы</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Пагинация -->
+{% include "components/paginator.html" with reviews=users search_query=search_query current_sort=current_sort current_order=current_order %}
 {% else %}
-    <p class="text-center">Пользователи не найдены.</p>
+<p class="text-center text-muted">Пользователи не найдены.</p>
 {% endif %}

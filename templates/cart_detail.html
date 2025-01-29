@@ -1,72 +1,64 @@
-{% extends "components/base.html" %} {% load django_app_filters_and_tags %} 
-{%load static %} {% block main %}
-<div class="container mt-5">
-  <h2 class="text-center mb-4">Ваша корзина</h2>
-  {% for cart_item in cart_items %}
-    <div class="row mb-4 cart-item">
-      <div class="col-md-2">
-        <img src="{{ cart_item.item.get_image_url }}" alt="{{ cart_item.item.title }}" class="img-fluid cart-image" />
-      </div>
-      <div class="col-md-4">
-        <h4>{{ cart_item.item.title }}</h4>
-        {% if cart_item.item.discounted_price %}
-          <p class="text-muted mb-1">
-            <del>{{ cart_item.item.price }} <i class="fas fa-tenge-sign"></i></del>
-          </p>
-          <p class="mb-1">
-            <strong>Цена со скидкой:</strong> {{ cart_item.item.discounted_price }}
-            <i class="fas fa-tenge-sign"></i>
-          </p>
-        {% else %}
-          <p class="mb-1">
-            <strong>Цена:</strong> {{ cart_item.item.price }} <i class="fas fa-tenge-sign"></i>
-          </p>
-        {% endif %}
-      </div>
-      <div class="col-md-2">
-        <div class="quantity-container">
-          <label for="quantity_{{ cart_item.item.id }}">Колличество:</label>
-          <input
-            type="number"
-            id="quantity_{{ cart_item.item.id }}"
-            name="quantity"
-            value="{{ cart_item.quantity }}"
-            min="1"
-            data-item-id="{{ cart_item.item.id }}"
-            class="form-control quantity-input"
-          />
-        </div>
-      </div>
-      <div class="col-md-2">
-        <p class="mb-1"><strong>Всего:</strong></p>
-        <p class="mb-1 total-price" id="total_price_{{ cart_item.item.id }}">
-          {{ cart_item.calculate_item_total }}
-        </p>
-      </div>
-      <div class="col-md-2 text-center">
-        <form method="post" action="{% url 'remove_from_cart' cart_item.item.id %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-danger remove-btn">
-            <i class="fas fa-trash"></i> Удалить
-          </button>
-        </form>
-      </div>
-    </div>
-  {% endfor %}
+{% extends "components/base.html" %}
+{% load django_app_filters_and_tags %}
+{% load static %}
 
-  <div class="checkout-container text-center mt-4">
-    <div class="row">
-      <div class="col-md-6 offset-md-6">
-        <h4 class="mb-2">
-          Итого: <span id="total_price">{{ total_price }}</span> <i class="fas fa-tenge-sign"></i>
-        </h4>
-        <a href="{% url 'checkout' %}" class="btn btn-primary checkout-button">
-          <i class="fas fa-shopping-cart"></i> К оплате
-        </a>
-      </div>
+{% block main %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">🛒 Ваша корзина</h2>
+
+    {% if cart_items %}
+    <div class="cart-container">
+        {% for cart_item in cart_items %}
+        <div class="cart-item d-flex align-items-center p-3 mb-3">
+            <div class="cart-image">
+                <img src="{{ cart_item.item.get_image_url }}" alt="{{ cart_item.item.title }}" class="img-fluid rounded">
+            </div>
+            <div class="cart-details flex-grow-1">
+                <h4>{{ cart_item.item.title }}</h4>
+                {% if cart_item.item.discounted_price %}
+                <p class="text-muted"><del>{{ cart_item.item.price }} ₸</del></p>
+                <p><strong>Цена со скидкой:</strong> <span class="text-success">{{ cart_item.item.discounted_price }} ₸</span></p>
+                {% else %}
+                <p><strong>Цена:</strong> {{ cart_item.item.price }} ₸</p>
+                {% endif %}
+            </div>
+            <div class="cart-quantity">
+                <label for="quantity_{{ cart_item.item.id }}">Количество:</label>
+                <input type="number" id="quantity_{{ cart_item.item.id }}" name="quantity"
+                       value="{{ cart_item.quantity }}" min="1" data-item-id="{{ cart_item.item.id }}"
+                       class="form-control quantity-input">
+            </div>
+            <div class="cart-total">
+                <p><strong>Всего:</strong></p>
+                <p class="total-price" id="total_price_{{ cart_item.item.id }}">{{ cart_item.calculate_item_total }} ₸</p>
+            </div>
+            <div class="cart-remove">
+                <form method="post" action="{% url 'remove_from_cart' cart_item.item.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm remove-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-  </div>
+
+    <div class="checkout-container text-center mt-4">
+        <h4>💰 Общая сумма: <span id="total_price">{{ total_price }}</span> ₸</h4>
+        <a href="{% url 'checkout' %}" class="btn btn-lg btn-success checkout-button">
+            <i class="fas fa-credit-card"></i> Перейти к оплате
+        </a>
+    </div>
+    {% else %}
+    <div class="empty-cart text-center">
+        <h4>Ваша корзина пуста 😕</h4>
+        <p>Добавьте товары в корзину, чтобы оформить заказ!</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">🛍 Перейти к покупкам</a>
+    </div>
+    {% endif %}
 </div>
+
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
   $(document).ready(function () {
@@ -83,9 +75,7 @@
           csrfmiddlewaretoken: "{{ csrf_token }}",
         },
         success: function (response) {
-          const totalElement = $(`#total_price_${itemId}`);
-          totalElement.html(response.total.toFixed(2));
-
+          $(`#total_price_${itemId}`).html(response.total.toFixed(2) + " ₸");
           updateTotalPrice();
         },
         error: function (error) {
@@ -96,12 +86,67 @@
 
     function updateTotalPrice() {
       let totalPrice = 0;
-      $('p.total-price').each(function () {
+      $(".total-price").each(function () {
         totalPrice += parseFloat($(this).text());
       });
-
       $("#total_price").text(totalPrice.toFixed(2));
     }
   });
 </script>
+
+<style>
+    .cart-container {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        background: #fff;
+    }
+
+    .cart-item {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding: 15px 0;
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .cart-image img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    .cart-details {
+        flex: 1;
+        padding-left: 15px;
+    }
+
+    .cart-quantity input {
+        width: 60px;
+        text-align: center;
+    }
+
+    .cart-total {
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .cart-remove {
+        text-align: center;
+    }
+
+    .checkout-button {
+        margin-top: 20px;
+        font-size: 18px;
+        padding: 10px 20px;
+    }
+
+    .empty-cart {
+        padding: 50px 0;
+    }
+</style>
 {% endblock main %}

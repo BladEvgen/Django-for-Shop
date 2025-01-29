@@ -2,65 +2,76 @@
 {% load django_app_filters_and_tags %}
 {% block main %}
 {% check_access "moder_seller" as access %}
-{%if access%}
-  <div class="container mt-5">
-    <a href="{% url 'order_list' %}" class="btn btn-primary mb-3">
-      <i class="fas fa-arrow-left"></i>Вернуться к списку заказов
+{% if access %}
+<div class="container mt-5">
+    <!-- Кнопка возврата -->
+    <a href="{% url 'order_list' %}" class="btn btn-outline-primary mb-3">
+        <i class="fas fa-arrow-left"></i> Вернуться к списку заказов
     </a>
-    <h3>Контактная информация покупателя:</h3>
-    <div class="row">
-      <div class="col-md-6">
-        <p>Фамилия: {{ order.user.last_name }}</p>
-        <p>Имя: {{ order.user.first_name }}</p>
-      </div>
-      <div class="col-md-6">
-        <p>Номер телефона: {{ order.user.profile.phonenumber }}</p>
-        <p>Адресс доставки: {{ order.user.profile.address }}</p>
-      </div>
+
+    <!-- Контактная информация -->
+    <h3 class="text-primary">👤 Контактная информация покупателя:</h3>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <p><strong>Фамилия:</strong> {{ order.user.last_name }}</p>
+            <p><strong>Имя:</strong> {{ order.user.first_name }}</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Номер телефона:</strong> {{ order.user.profile.phonenumber }}</p>
+            <p><strong>Адрес доставки:</strong> {{ order.user.profile.address }}</p>
+        </div>
     </div>
 
-    <form method="post" action="{% url 'update_order_status' order.id %}" class="mt-5">
-      {% csrf_token %}
-      <div class="form-group">
-        <label for="new_status">Обновить статус заявки:</label>
-        <select name="new_status" id="new_status" class="form-control">
-          {% for status in order.STATUS_CHOICES %}
-            <option value="{{ status.0 }}" {% if order.status == status.0 %}selected{% endif %}>{{ status.1 }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">Обновить</button>
+    <!-- Обновление статуса заказа -->
+    <form method="post" action="{% url 'update_order_status' order.id %}" class="mb-5">
+        {% csrf_token %}
+        <h3 class="text-primary">🔄 Обновление статуса заказа:</h3>
+        <div class="form-group">
+            <label for="new_status">Выберите новый статус:</label>
+            <select name="new_status" id="new_status" class="form-select">
+                {% for status in order.STATUS_CHOICES %}
+                <option value="{{ status.0 }}" {% if order.status == status.0 %}selected{% endif %}>{{ status.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success mt-3">
+            <i class="fas fa-sync-alt"></i> Обновить статус
+        </button>
     </form>
 
-    <h3 class="mt-5">Информация о товаре:</h3>
+    <!-- Информация о товарах -->
+    <h3 class="text-primary">📦 Информация о товарах:</h3>
     <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Товар</th>
-            <th>Колличество</th>
-            <th>Цена за единицу товара</th>
-            <th>Общая цена за товар</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for order_item in order.order_items.all %}
-            <tr>
-              <td>{{ order_item.item.title }}</td>
-              <td class="text-center">{{ order_item.quantity }} шт</td>
-              <td class="text-center">{{ order_item.item.discounted_price|default:order_item.item.price }} <i class="fa-solid fa-tenge-sign"></i></td>
-              <td class="text-center">{{ order_item.calculate_item_total }} <i class="fa-solid fa-tenge-sign"></i></td>
-            </tr>
-          {% endfor %}
-          <tr>
-            <td colspan="3" class="text-right"><strong>Общая стоимость всех продуктов:</strong> </td>
-            <td class="text-center">{{ order.get_total_price }}  <i class="fa-solid fa-tenge-sign"></i></td>
-          </tr>
-        </tbody>
-      </table>
+        <table class="table table-bordered table-hover mt-3">
+            <thead class="table-light">
+                <tr>
+                    <th>Товар</th>
+                    <th class="text-center">Количество</th>
+                    <th class="text-center">Цена за единицу</th>
+                    <th class="text-center">Общая стоимость</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order_item in order.order_items.all %}
+                <tr>
+                    <td>{{ order_item.item.title }}</td>
+                    <td class="text-center">{{ order_item.quantity }} шт</td>
+                    <td class="text-center">{{ order_item.item.discounted_price|default:order_item.item.price }} ₸</td>
+                    <td class="text-center">{{ order_item.calculate_item_total }} ₸</td>
+                </tr>
+                {% endfor %}
+                <tr class="table-secondary">
+                    <td colspan="3" class="text-end"><strong>Общая стоимость:</strong></td>
+                    <td class="text-center"><strong>{{ order.get_total_price }} ₸</strong></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-  </div>
+</div>
 {% else %}
-<div class="container-fluid"> <p>Как вы попали сюда?</p></div>
-{%endif%}
+<div class="container mt-5 text-center">
+    <h2 class="text-danger">🚫 Доступ запрещён</h2>
+    <p>У вас нет прав для просмотра этой страницы.</p>
+</div>
+{% endif %}
 {% endblock %}

@@ -1,58 +1,77 @@
 {% extends "components/base.html" %}
-{% load django_app_filters_and_tags %} 
-{%load static %} 
-{% block title %}Chatting 
-{% endblock title %} 
+{% load django_app_filters_and_tags %}
+{% load static %}
+
+{% block title %}Чат-комнаты{% endblock title %}
+
 {% block main %}
-
 <div class="container mt-5">
-  <h1 class="display-4 text-center">
-    {{ current_user.username|title }}'s Chat Rooms
-  </h1>
-<div class="d-flex flex-lg-row">
- {% if sort == "desc" %}
-    <a class="sort-link" href="{% url 'chat' %}?sort=asc" id="sort-asc"><i class="fa-solid fa-arrow-up-wide-short display-5"></i></a>
-    {% elif sort == "asc" %}
-    <a class="sort-link" href="{% url 'chat' %}?sort=desc" id="sort-desc"><i class="fa-solid fa-arrow-down-wide-short display-5"></i></a>
-    {% endif %}
+    <!-- Заголовок -->
+    <h1 class="display-4 text-center text-primary">
+        Чат-комнаты {{ current_user.username|title }}
+    </h1>
+
+    <!-- Кнопка сортировки -->
+    <div class="d-flex justify-content-end my-3">
+        {% if sort == "desc" %}
+        <a class="btn btn-outline-secondary" href="{% url 'chat' %}?sort=asc" id="sort-asc">
+            <i class="fas fa-sort-amount-up-alt"></i> Сортировать по возрастанию
+        </a>
+        {% elif sort == "asc" %}
+        <a class="btn btn-outline-secondary" href="{% url 'chat' %}?sort=desc" id="sort-desc">
+            <i class="fas fa-sort-amount-down-alt"></i> Сортировать по убыванию
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Список чат-комнат -->
+    <div class="row mt-4" id="room_data">
+        {% if current_user.is_authenticated %}
+        {% for room_data in room_data %}
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div class="card h-100 shadow-sm border-0 rounded overflow-hidden">
+                <div class="card-body">
+                    <h5 class="card-title text-primary mb-3">
+                        Название предмета: {{ room_data.room.item.title }}
+                    </h5>
+                    <p class="card-text text-muted">
+                        <i class="fas fa-user-circle"></i> Общение с {{ room_data.opponent_username|title }}
+                    </p>
+                </div>
+                <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-clock"></i> Создано: {% formatted_time room_data.room.created_at %}
+                    </small>
+                    <a href="{% url 'room' room_data.room.slug room_data.room.token %}" class="btn btn-primary btn-sm">
+                        Присоединиться
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-md-12">
+            <div class="alert alert-info text-center" role="alert">
+                У вас еще не создано чатов!
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
 </div>
 
-  <div class="row mt-4" id="room_data">
-    {% if current_user.is_authenticated %} {% for room_data in room_data %}
-    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-      <div
-        class="card h-100 border-0 rounded overflow-hidden shadow-sm animate__animated animate__fadeIn">
-        <div class="card-body p-4 bg-light">
-          <h5 class="card-title mb-3">
-            Назввание предмета: {{ room_data.room.item.title }}
-          </h5>
-          <p class="card-text">
-            <i class="bi bi-card-text"></i> Общение с 
-            {{room_data.opponent_username | title  }}
-          </p>
-        </div>
-        <div class="card-footer bg-transparent">
-          <small class="text-muted d-flex justify-content-between mb-3">
-            <span>Созданно:</span>
-            <span>{%formatted_time room_data.room.created_at%}</span>
-          </small>
-          <a
-            href="{% url 'room' room_data.room.slug room_data.room.token %}"
-            class="btn btn-primary btn-sm"
-            >Присоединиться</a
-          >
-        </div>
-      </div>
-    </div>
-    {% empty %}
-    <div class="col-md-12">
-      <div class="alert alert-info" role="alert">
-        У вас еще не было созданно чатов!
-      </div>
-    </div>
-    {% endfor %} {% endif %}
-  </div>
-</div>
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: white;
+    }
+</style>
 {% endblock main %}
-
-

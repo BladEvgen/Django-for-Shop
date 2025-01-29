@@ -1,70 +1,122 @@
 {% extends "components/base.html" %}
 
-{% block title %} Create Product {% endblock title %}
+{% block title %}Создать Продукт{% endblock title %}
 
 {% block main %}
-  <div class="container">
-    <h2 class="text-center mb-4">Создать Продукт</h2>
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      <div class="form-group">
-        <label for="name">Названия:</label>
-        <input type="text" class="form-control" id="name" name="name" required>
-      </div>
-      <div class="form-group">
-        <label for="category">Категория:</label>
-        <select class="form-control" id="category" name="category" required>
-          {% for category in categories %}
-            <option value="{{ category.id }}">{{ category.title }}</option>
-          {% endfor %}
-        </select>
-      </div>
+<div class="container mt-5">
+    <h2 class="text-center mb-4 text-primary">📦 Создание нового продукта</h2>
+    <div class="product-form-container p-4 rounded shadow-sm bg-white">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-      <div class="form-group">
-        <label for="picture" class="btn btn-primary btn-block mt-3 mb-2">
-          Выберите Файл
-          <input type="file" id="picture" name="picture" accept=".jpg, .jpeg, .png, .webp" style="display: none;" onchange="previewImage(this);">
-        </label>
-        <img id="imagePreview" class="mt-2 img-thumbnail" style="max-width: 200px; max-height: 200px; display: none;" />
-      </div>
+            <!-- Название продукта -->
+            <div class="mb-3">
+                <label for="name" class="form-label">📝 Название продукта:</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Введите название продукта" required>
+            </div>
 
-      <div class="form-group">
-        <label for="price">Цена:</label>
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text">₸</span>
-          </div>
-          <input type="number" class="form-control" id="price" name="price" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="description">Описание:</label>
-        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
-      </div>
+            <!-- Категория продукта -->
+            <div class="mb-3">
+                <label for="category" class="form-label">📂 Категория:</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option value="" disabled selected>Выберите категорию</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <br>
-      <button type="submit" class="btn btn-primary btn-block">Создать</button>
-    </form>
-  </div>
+            <!-- Загрузка изображения -->
+            <div class="mb-3">
+                <label for="picture" class="form-label">🖼 Изображение продукта:</label>
+                <div class="upload-preview-container text-center">
+                    <label for="picture" class="btn btn-outline-primary mt-2">
+                        Выберите изображение
+                        <input type="file" id="picture" name="picture" accept=".jpg, .jpeg, .png, .webp" style="display: none;" onchange="previewImage(this);">
+                    </label>
+                    <img id="imagePreview" class="img-thumbnail mt-3" style="max-width: 250px; max-height: 250px; display: none;">
+                </div>
+            </div>
 
-  <script>
+            <!-- Цена -->
+            <div class="mb-3">
+                <label for="price" class="form-label">💵 Цена:</label>
+                <div class="input-group">
+                    <span class="input-group-text">₸</span>
+                    <input type="number" class="form-control" id="price" name="price" placeholder="Введите цену" required>
+                </div>
+            </div>
+
+            <!-- Описание -->
+            <div class="mb-3">
+                <label for="description" class="form-label">📝 Описание:</label>
+                <textarea class="form-control" id="description" name="description" rows="4" placeholder="Введите описание продукта" required></textarea>
+            </div>
+
+            <!-- Кнопка отправки -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-check-circle"></i> Создать продукт
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
     function previewImage(input) {
-      var preview = document.getElementById('imagePreview');
-      var file = input.files[0];
-      var reader = new FileReader();
+        var preview = document.getElementById('imagePreview');
+        var file = input.files[0];
+        var reader = new FileReader();
 
-      reader.onloadend = function () {
-        preview.src = reader.result;
-        preview.style.display = 'block';
-      }
+        reader.onloadend = function () {
+            preview.src = reader.result;
+            preview.style.display = 'block';
+        }
 
-      if (file) {
-        reader.readAsDataURL(file);
-      } else {
-        preview.src = "";
-        preview.style.display = 'none';
-      }
+        if (file) {
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = "";
+            preview.style.display = 'none';
+        }
     }
-  </script>
+</script>
+
+<style>
+    .product-form-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #f9f9f9;
+    }
+
+    .form-label {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .btn-outline-primary {
+        font-size: 16px;
+    }
+
+    .btn-success {
+        font-size: 18px;
+        padding: 10px 20px;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    .img-thumbnail {
+        border-radius: 10px;
+    }
+
+    .input-group-text {
+        background-color: #e9ecef;
+        font-weight: bold;
+    }
+</style>
 
 {% endblock main %}
