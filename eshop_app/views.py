@@ -21,9 +21,11 @@ from eshop_app import utils
 from eshop_app import models
 from django.db.models import Q
 from django.urls import reverse
+from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
 from django.http import HttpResponse
+from django.core.mail import send_mail
 from django.utils.translation import activate
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
@@ -792,6 +794,8 @@ def checkout(request):
 
         user.profile.phonenumber = request.POST.get("phonenumber")
         user.profile.address = request.POST.get("address")
+        user.profile.email = request.POST.get("email")
+        
         user.profile.save()
 
         order = models.Order.objects.create(user=user)
@@ -807,6 +811,11 @@ def checkout(request):
             )
 
             cart_item.delete()
+        subject = 'Подтверждение заказа на ElectroHub'
+        message = render_to_string('order_email.html', {'order': order}, request=request)
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [user.profile.email]
+        send_mail(subject, message, from_email, recipient_list, html_message=message)
 
         return render(request, "order_confirmation.html", {"order": order})
 
@@ -857,8 +866,22 @@ def update_order_status(request, order_id):
             order.status = new_status
             order.save()
 
-    return render(request, "OrderConfirmation_moderate.html", {"order": order})
+            if new_status == "Confirmed":
+                subject = "Ваш заказ на EHub подтвержден!"
+            elif new_status == "Canceled":
+                subject = "Ваш заказ на EHub был отменен"
+            elif new_status == "Completed":
+                subject = "Ваш заказ на EHub успешно доставлен!"
+            else:
+                subject = "Обновление статуса вашего заказа на EHub"
 
+            message = render_to_string("order_email.html", {"order": order}, request=request)
+            recipient_list = [order.user.email]
+
+
+            send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list, html_message=message)
+
+    return render(request, "OrderConfirmation_moderate.html", {"order": order})
 
 def order_detail_user(request, order_id):
     order = get_object_or_404(models.Order, id=order_id, user=request.user)

@@ -45,9 +45,6 @@ class UserProfile(models.Model):
     def delete_user(self):
         self.user.delete()
 
-    def get_avatar_url(self):
-        return self.avatar.url if self.avatar else None
-
     def check_access(self, action_slug: str = ""):
         try:
             user: User = self.user

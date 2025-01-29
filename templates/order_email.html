@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Уведомление о статусе заказа на EHub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .header {
+            padding: 10px 0;
+            border-bottom: 3px solid #ff7300;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        .content {
+            text-align: left;
+            padding: 20px 0;
+        }
+        h2 {
+            color: #ff7300;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #ff7300;
+            color: white;
+        }
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #ff7300;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #d95300;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+        {% include "components/logo.html" %}
+        </div>
+        <div class="content">
+            <h2>Здравствуйте, {{ order.user.get_full_name }}!</h2>
+            
+            {% if order.status == "Processing" %}
+                <p>Спасибо за ваш заказ на <strong>EHub</strong>! Мы приступили к его обработке и скоро отправим его вам.</p>
+            {% elif order.status == "Confirmed" %}
+                <p>Отличная новость! Ваш заказ подтверждён и уже готовится к отправке.</p>
+            {% elif order.status == "Canceled" %}
+                <p>К сожалению, ваш заказ был отменён. Если у вас возникли вопросы, пожалуйста, свяжитесь с нашей поддержкой.</p>
+            {% elif order.status == "Completed" %}
+                <p>Ваш заказ успешно доставлен! Спасибо, что выбрали EHub.</p>
+            {% endif %}
+            
+            <p><strong>Номер заказа:</strong> {{ order.id }}</p>
+            <p><strong>Дата заказа:</strong> {{ order.date_created|date:"d F Y, H:i" }}</p>
+            <p><strong>Текущий статус:</strong> {{ order.status }}</p>
+
+            <h3>Детали доставки:</h3>
+            <p><strong>Имя:</strong> {{ order.user.first_name }} {{ order.user.last_name }}</p>
+            <p><strong>Телефон:</strong> {{ order.user.profile.phonenumber }}</p>
+            <p><strong>Адрес:</strong> {{ order.user.profile.address }}</p>
+
+            <h3>Состав заказа:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th>Кол-во</th>
+                        <th>Цена</th>
+                        <th>Итого</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order_item in order.order_items.all %}
+                    <tr>
+                        <td>{{ order_item.item.title }}</td>
+                        <td>{{ order_item.quantity }} шт</td>
+                        <td>{{ order_item.item.discounted_price|default:order_item.item.price }} ₸</td>
+                        <td>{{ order_item.calculate_item_total }} ₸</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="total">Общая сумма: {{ order.get_total_price }} ₸</p>
+
+            <a href="{{ request.scheme }}://{{ request.get_host }}{% url 'order_detail_user' order.id %}" class="btn">Отследить заказ</a>
+        </div>
+        <div class="footer">
+            <p>Если у вас есть вопросы, свяжитесь с нами: <a href="mailto:support@yourwebsite.com">support@yourwebsite.com</a></p>
+            <p>© {{ current_year }} EHub. Все права защищены.</p>
+        </div>
+    </div>
+</body>
+</html>
