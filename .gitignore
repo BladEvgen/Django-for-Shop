@@ -162,3 +162,4 @@ cython_debug/
 /eshop_app/migrations
 /log
 /static
+*.jpg
