@@ -1,166 +1,290 @@
-{% extends "components/base.html" %}
-{% block title %} Обновить Товар {% endblock title %}
+{% extends "components/base.html" %} 
 {% load django_app_filters_and_tags %}
 {% load static %}
+
+{% block title %} Обновление товара {% endblock title %}
+
 {% block main %}
-
 <div class="container mt-5">
-  <h2 class="mb-4">Обновить Товар</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+    <h2 class="text-center text-primary mb-4 fw-bold">🛍️ Обновление товара</h2>
 
-    <div class="mb-3">
-      <label for="title" class="form-label">Название:</label>
-      <input type="text" name="title" class="form-control" value="{{ item.title }}" required>
+    <div class="card shadow-lg border-0 p-4">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            <div class="row">
+                <!-- Левая колонка -->
+                <div class="col-md-7">
+                    <!-- Основная информация -->
+                    <div class="mb-4">
+                        <label for="title" class="form-label fw-bold">Название:</label>
+                        <div class="input-group">
+                            <input type="text" name="title" id="title" class="form-control" value="{{ item.title }}" required minlength="3" maxlength="100">
+                            <span class="input-group-text validation-icon" id="title-icon">
+                                {% if item.title|length >= 3 %}
+                                    ✅
+                                {% else %}
+                                    ❌
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="invalid-feedback">Введите название (от 3 до 100 символов).</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-bold">Описание:</label>
+                        <div class="input-group">
+                            <textarea name="description" id="description" class="form-control" rows="5" required minlength="10">{{ item.description }}</textarea>
+                            <span class="input-group-text validation-icon" id="description-icon">
+                                {% if item.description|length >= 10 %}
+                                    ✅
+                                {% else %}
+                                    ❌
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="invalid-feedback">Описание должно содержать не менее 10 символов.</div>
+                    </div>
+
+                    <!-- Цены -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="original_price" class="form-label fw-bold">Оригинальная цена (₸):</label>
+                            <div class="input-group">
+                                <input type="number" name="original_price" id="original_price" class="form-control" value="{{ item.price }}" required min="1">
+                                <span class="input-group-text validation-icon" id="original_price-icon">
+                                    {% if item.price > 0 %}
+                                        ✅
+                                    {% else %}
+                                        ❌
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="invalid-feedback">Введите корректную цену (больше 0).</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="discounted_price" class="form-label fw-bold">Цена со скидкой (₸):</label>
+                            <div class="input-group">
+                                <input type="number" name="discounted_price" id="discounted_price" class="form-control" value="{{ item.discounted_price }}" min="0">
+                                <span class="input-group-text validation-icon" id="discounted_price-icon"></span>
+                            </div>
+                            <div class="invalid-feedback">Цена со скидкой должна быть меньше оригинальной.</div>
+                        </div>
+                    </div>
+
+                    <!-- Категория и тэги -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label fw-bold">Категория:</label>
+                            <select name="category" class="form-select" required>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if category.id == item.category.id %}selected{% endif %}>{{ category.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tags" class="form-label fw-bold">Тэги:</label>
+                            <select name="tags" id="tags" class="form-select" multiple>
+                                {% for tag in tags %}
+                                <option value="{{ tag.id }}" {% if tag in item.tags.all %}selected{% endif %}>{{ tag.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Удерживайте Ctrl (Cmd) для выбора/отмены нескольких тэгов.</small>
+                        </div>
+                    </div>
+
+                    <!-- Статус Активности -->
+                    <div class="mb-4">
+                        <label for="is_active" class="form-label fw-bold">Статус Активности:</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if item.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                {% if item.is_active %}
+                                    Активен
+                                {% else %}
+                                    Неактивен
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая колонка (изображения) -->
+                <div class="col-md-5">
+                    <!-- Основное изображение -->
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-bold">Основное изображение:</label>
+                        <div class="border rounded shadow-sm p-3 bg-light">
+                            <img id="avatar-preview" class="img-fluid rounded" src="{% item_image_url item %}" alt="{{ item.name }}" style="max-width: 100%;">
+                        </div>
+                        <input type="file" name="image" id="image" class="form-control mt-2" accept=".jpg, .jpeg, .png, .webp">
+                    </div>
+
+                    <!-- Дополнительные изображения -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Дополнительные изображения:</label>
+                        <div id="additional-images-preview" class="d-flex flex-wrap gap-2">
+                            {% for img in additional_images %}
+                            <div class="position-relative">
+                                <img src="{{ img.image.url }}" class="img-thumbnail rounded shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
+                                <button type="button" class="btn-close position-absolute top-0 end-0 remove-image-btn" data-image-id="{{ img.id }}"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div id="hidden-file-inputs" class="d-flex flex-wrap gap-2">
+                            <button type="button" id="add-image-btn" class="btn btn-outline-primary rounded-circle plus-button">➕</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка отправки -->
+            <button type="submit" id="submit-btn" class="btn btn-primary w-100 mt-4" {% if not form.is_valid %}disabled{% endif %}>Обновить товар</button>
+        </form>
     </div>
-
-    <div class="mb-3">
-      <label for="description" class="form-label">Описание:</label>
-      <textarea name="description" class="form-control" rows="4" required>{{ item.description }}</textarea>
-    </div>
-
-    <!-- Основное изображение -->
-    <div class="mb-3">
-      <label for="avatar" class="form-label">Предпросмотр товара:</label>
-      <div class="d-flex align-items-center justify-content-center mb-3">
-        {% if item.image %}
-          <img id="avatar-preview" class="img-fluid img-thumbnail" src="{% item_image_url item %}" alt="{{ item.name }}" style="max-width:30%;">
-        {% else %}
-          <img id="avatar-preview" class="img-fluid img-thumbnail" src="{% static 'media/png/nodatafound.png' %}" alt="no data found" width="50">
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label for="image" class="form-label">Выберите основное изображение:</label>
-      <input type="file" name="image" id="image" class="form-control" accept=".jpg, .jpeg, .png, .webp">
-    </div>
-
-    <!-- Блок дополнительных изображений -->
-    <div class="mb-3">
-      <label class="form-label">Дополнительные изображения (макс. 10):</label>
-      <div id="additional-images-preview" class="d-flex flex-wrap">
-        {% for img in additional_images %}
-          <div class="position-relative m-2">
-            <img src="{{ img.image.url }}" class="img-thumbnail" style="max-width:100px; max-height:100px;">
-            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn" data-image-id="{{ img.id }}">✖</button>
-          </div>
-        {% endfor %}
-      </div>
-
-      <div id="additional-images-container">
-        <div class="additional-image-input mb-2">
-          <input type="file" name="additional_images" class="form-control additional-image" accept=".jpg, .jpeg, .png, .webp">
-        </div>
-      </div>
-      <button type="button" id="add-image-btn" class="btn btn-secondary btn-sm mt-2">Добавить изображение</button>
-    </div>
-
-    <div class="mb-3">
-      <label for="original_price" class="form-label">Оригинальная цена:</label>
-      <input type="number" name="original_price" class="form-control" value="{{ item.price }}" required>
-    </div>
-
-    <div class="mb-3">
-      <label for="discounted_price" class="form-label">Цена со скидкой:</label>
-      <small>Оставьте пустым если хотите вернуть/оставить оригинальную цену.</small>
-      <input type="number" name="discounted_price" class="form-control" value="{{ item.discounted_price }}">
-    </div>
-
-    <div class="mb-3">
-      <label for="category" class="form-label">Категория:</label>
-      <select name="category" class="form-control">
-        {% for category in categories %}
-          <option value="{{ category.id }}" {% if category.id == item.category.id %}selected{% endif %}>{{ category.title }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="mb-3">
-      <label for="tags" class="form-label">Тэги:</label>
-      <select name="tags" class="form-control" multiple>
-        {% for tag in tags %}
-          <option value="{{ tag.id }}" {% if tag in item.tags.all %}selected{% endif %}>{{ tag.title }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="mb-3">
-      <label for="is_active" class="form-label">Статус Активности:</label>
-      <input type="checkbox" name="is_active" {% if item.is_active %}checked{% endif %}>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Обновить</button>
-  </form>
 </div>
 
 <!-- Скрипты -->
 <script>
-  function updateAvatarPreview() {
-    var input = document.getElementById('image');
-    var preview = document.getElementById('avatar-preview');
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector(".needs-validation");
+        const titleInput = document.getElementById("title");
+        const descriptionInput = document.getElementById("description");
+        const originalPriceInput = document.getElementById("original_price");
+        const discountedPriceInput = document.getElementById("discounted_price");
+        const submitBtn = document.getElementById("submit-btn");
+        const addImageButton = document.getElementById("add-image-btn");
+        const additionalImagesPreview = document.getElementById("additional-images-preview");
+        const hiddenFileInputs = document.getElementById("hidden-file-inputs");
+        const discountedPriceIcon = document.getElementById("discounted_price-icon");
 
-    input.addEventListener('change', function () {
-      var file = input.files[0];
-
-      if (file) {
-        var reader = new FileReader();
-
-        reader.onload = function (e) {
-          preview.src = e.target.result;
-        };
-
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-
- window.onload = function () {
-    updateAvatarPreview();
-
-    const maxImages = 10;
-    const addImageButton = document.getElementById('add-image-btn');
-    const additionalImagesContainer = document.getElementById('additional-images-container');
-
-    addImageButton.addEventListener('click', function () {
-      const imageInputs = additionalImagesContainer.getElementsByClassName('additional-image');
-
-      if (imageInputs.length < maxImages) {
-        const newInputDiv = document.createElement('div');
-        newInputDiv.classList.add('additional-image-input', 'mb-2');
-        newInputDiv.innerHTML = '<input type="file" name="additional_images" class="form-control additional-image" accept=".jpg, .jpeg, .png, .webp">';
-        additionalImagesContainer.appendChild(newInputDiv);
-      } else {
-        alert("Можно загрузить не более 10 дополнительных изображений.");
-      }
-    });
-
-    document.querySelectorAll('.remove-image-btn').forEach(btn => {
-      btn.addEventListener('click', function () {
-        const imageId = this.getAttribute('data-image-id');
-        const parentDiv = this.parentElement;
-
-        fetch(`/delete_item_image/${imageId}/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          }
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              parentDiv.remove();
+        // Поля валидаторы
+        function validateField(input, condition, iconId) {
+            const icon = document.getElementById(iconId);
+            if (condition) {
+                icon.textContent = "✅";
+                input.classList.remove("is-invalid");
+                input.classList.add("is-valid");
+                input.setCustomValidity("");
             } else {
-              alert(data.error || "Ошибка при удалении изображения.");
+                icon.textContent = "❌";
+                input.classList.remove("is-valid");
+                input.classList.add("is-invalid");
+                input.setCustomValidity("Invalid");
             }
-          })
-          .catch(error => {
-            alert("Ошибка при удалении изображения.");
-            console.error(error);
-          });
-      });
-    });
-  };
-</script>
+        }
 
-{% endblock main %}
+        // Инициализация иконок при загрузке
+        function initializeValidation() {
+            validateField(titleInput, titleInput.value.trim().length >= 3, "title-icon");
+            validateField(descriptionInput, descriptionInput.value.trim().length >= 10, "description-icon");
+            validateField(originalPriceInput, originalPriceInput.value > 0, "original_price-icon");
+            
+            // Для discounted_price изначально без иконки
+            discountedPriceIcon.textContent = "";
+            discountedPriceInput.classList.remove("is-valid", "is-invalid");
+            discountedPriceInput.setCustomValidity("");
+        }
+
+        initializeValidation();
+
+        titleInput.addEventListener("input", () => validateField(titleInput, titleInput.value.trim().length >= 3, "title-icon"));
+        descriptionInput.addEventListener("input", () => validateField(descriptionInput, descriptionInput.value.trim().length >= 10, "description-icon"));
+        originalPriceInput.addEventListener("input", () => validateField(originalPriceInput, originalPriceInput.value > 0, "original_price-icon"));
+        discountedPriceInput.addEventListener("input", () => {
+            if (discountedPriceInput.value.trim() === "") {
+                discountedPriceIcon.textContent = "";
+                discountedPriceInput.classList.remove("is-valid", "is-invalid");
+                discountedPriceInput.setCustomValidity("");
+            } else {
+                const isValid = parseFloat(discountedPriceInput.value) < parseFloat(originalPriceInput.value);
+                validateField(discountedPriceInput, isValid, "discounted_price-icon");
+            }
+            checkFormValidity();
+        });
+
+        form.addEventListener("input", () => {
+            checkFormValidity();
+        });
+
+        function checkFormValidity() {
+            const isFormValid = form.checkValidity();
+            submitBtn.disabled = !isFormValid;
+        }
+
+        // Дополнительные изображения
+        addImageButton.addEventListener("click", () => {
+            if (hiddenFileInputs.querySelectorAll("input[type='file']").length < 10) {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.name = "additional_images";
+                input.className = "form-control additional-image mt-2 d-none"; // Скрытый инпут
+                input.accept = ".jpg, .jpeg, .png, .webp";
+
+                input.addEventListener("change", (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            const div = document.createElement("div");
+                            div.className = "position-relative";
+
+                            const img = document.createElement("img");
+                            img.src = event.target.result;
+                            img.className = "img-thumbnail rounded shadow-sm";
+                            img.style = "width: 100px; height: 100px; object-fit: cover;";
+
+                            const btn = document.createElement("button");
+                            btn.type = "button";
+                            btn.className = "btn-close position-absolute top-0 end-0";
+                            btn.addEventListener("click", () => {
+                                div.remove();
+                                input.remove();
+                                checkFormValidity();
+                            });
+
+                            div.appendChild(img);
+                            div.appendChild(btn);
+                            additionalImagesPreview.appendChild(div);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                hiddenFileInputs.appendChild(input);
+                input.click();
+            }
+        });
+
+        // Удаление существующих изображений
+        document.querySelectorAll(".remove-image-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const imageId = this.getAttribute("data-image-id");
+                const parentDiv = this.parentElement;
+
+                fetch(`/delete_item_image/${imageId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({})
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            parentDiv.remove();
+                            checkFormValidity();
+                        } else {
+                            alert(data.error || "Ошибка при удалении изображения.");
+                        }
+                    })
+                    .catch(error => {
+                        alert("Ошибка при удалении изображения.");
+                        console.error(error);
+                    });
+            });
+        });
+    });
+</script>
+{% endblock %}

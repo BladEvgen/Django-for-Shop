@@ -1,66 +1,113 @@
 <div class="container mt-4">
-  <nav aria-label="Навигация по страницам пользователей">
-    <ul class="pagination justify-content-center">
-      
-      {% if reviews.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?q={{ search_query }}&page=1" aria-label="Первая">
-            <span aria-hidden="true">&laquo;&laquo;</span>
-          </a>
-        </li>
-        <li class="page-item">
-          <a class="page-link" href="?q={{ search_query }}&page={{ reviews.previous_page_number }}" aria-label="Предыдущая">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-      {% else %}
-        <li class="page-item disabled">
-          <span class="page-link" aria-label="Первая">
-            <span aria-hidden="true">&laquo;&laquo;</span>
-          </span>
-        </li>
-        <li class="page-item disabled">
-          <span class="page-link" aria-label="Предыдущая">
-            <span aria-hidden="true">&laquo;</span>
-          </span>
-        </li>
-      {% endif %}
+    <nav aria-label="Навигация по страницам">
+        <ul class="pagination justify-content-center shadow-sm p-2 rounded">
+            <!-- Кнопка "Первая" -->
+            {% if reviews.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ search_query }}&page=1" aria-label="Первая" data-bs-toggle="tooltip" title="Первая страница">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?q={{ search_query }}&page={{ reviews.previous_page_number }}" aria-label="Предыдущая" data-bs-toggle="tooltip" title="Предыдущая страница">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-left"></i></span>
+            </li>
+            {% endif %}
 
-      {% for num in reviews.paginator.page_range %}
-        {% if num == reviews.number %}
-          <li class="page-item active">
-            <span class="page-link">{{ num }}</span>
-          </li>
-        {% else %}
-          <li class="page-item">
-            <a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a>
-          </li>
-        {% endif %}
-      {% endfor %}
+            <!-- Номера страниц -->
+            {% for num in reviews.paginator.page_range %}
+                {% if num == reviews.number %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > reviews.number|add:-3 and num < reviews.number|add:3 %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a>
+                </li>
+                {% elif num == 1 or num == reviews.paginator.num_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a>
+                </li>
+                {% elif num == reviews.number|add:-3 or num == reviews.number|add:3 %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+            {% endfor %}
 
-      {% if reviews.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?q={{ search_query }}&page={{ reviews.next_page_number }}" aria-label="Следующая">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-        <li class="page-item">
-          <a class="page-link" href="?q={{ search_query }}&page={{ reviews.paginator.num_pages }}" aria-label="Последняя">
-            <span aria-hidden="true">&raquo;&raquo;</span>
-          </a>
-        </li>
-      {% else %}
-        <li class="page-item disabled">
-          <span class="page-link" aria-label="Следующая">
-            <span aria-hidden="true">&raquo;</span>
-          </span>
-        </li>
-        <li class="page-item disabled">
-          <span class="page-link" aria-label="Последняя">
-            <span aria-hidden="true">&raquo;&raquo;</span>
-          </span>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
+            <!-- Кнопка "Последняя" -->
+            {% if reviews.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ search_query }}&page={{ reviews.next_page_number }}" aria-label="Следующая" data-bs-toggle="tooltip" title="Следующая страница">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?q={{ search_query }}&page={{ reviews.paginator.num_pages }}" aria-label="Последняя" data-bs-toggle="tooltip" title="Последняя страница">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-right"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
+
+<!-- Стилизация -->
+<style>
+    .pagination {
+        background: white;
+        border-radius: 10px;
+        padding: 10px;
+        display: flex;
+        gap: 5px;
+    }
+
+    .page-item .page-link {
+        border-radius: 8px;
+        transition: all 0.3s ease-in-out;
+        padding: 10px;
+        font-size: 1rem;
+    }
+
+    .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+    }
+
+    .page-item .page-link:hover {
+        background-color: #0056b3;
+        color: white;
+    }
+
+    .page-item.disabled .page-link {
+        background-color: #f1f1f1;
+        border-color: #ccc;
+        color: #999;
+    }
+</style>
+
+<!-- Скрипт для тултипов -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
