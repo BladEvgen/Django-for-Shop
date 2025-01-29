@@ -4,16 +4,28 @@ from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
 
-
+# Host names and DEBUG setting
 HOST_NAMES = ["RogStrix", "MacBook-Pro.local", "MacbookPro"]
 DEBUG = socket.gethostname() in HOST_NAMES
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables
 load_dotenv(BASE_DIR / ".env")
 
+# Secret keys and API configurations
 SECRET_KEY = os.getenv("SECRET_KEY")
 DB_TYPE = os.getenv("DB_TYPE", "sqlite3").lower()
+
+# Email configurations
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 # Function to get the local IP address
 def get_local_ip():
