@@ -1,39 +1,66 @@
-{% extends "components/base.html" %} {% block title %} Update Item {% endblock title %}
-{% load django_app_filters_and_tags %} 
+{% extends "components/base.html" %}
+{% block title %} Обновить Товар {% endblock title %}
+{% load django_app_filters_and_tags %}
 {% load static %}
 {% block main %}
-<style>
 
-</style>
 <div class="container mt-5">
   <h2 class="mb-4">Обновить Товар</h2>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    
+
     <div class="mb-3">
       <label for="title" class="form-label">Название:</label>
       <input type="text" name="title" class="form-control" value="{{ item.title }}" required>
     </div>
 
     <div class="mb-3">
+      <label for="description" class="form-label">Описание:</label>
+      <textarea name="description" class="form-control" rows="4" required>{{ item.description }}</textarea>
+    </div>
+
+    <!-- Основное изображение -->
+    <div class="mb-3">
       <label for="avatar" class="form-label">Предпросмотр товара:</label>
       <div class="d-flex align-items-center justify-content-center mb-3">
         {% if item.image %}
-            <img id="avatar-preview" class="img-fluid img-thumbnail" src="{% item_image_url item %}" alt="{{ item.name }}" style="max-width:30%;">
+          <img id="avatar-preview" class="img-fluid img-thumbnail" src="{% item_image_url item %}" alt="{{ item.name }}" style="max-width:30%;">
         {% else %}
-            <img id="avatar-preview" class="img-fluid img-thumbnail" src="{% static 'media/png/nodatafound.png' %}" alt="no data found" width="50">
+          <img id="avatar-preview" class="img-fluid img-thumbnail" src="{% static 'media/png/nodatafound.png' %}" alt="no data found" width="50">
         {% endif %}
       </div>
+    </div>
 
-    </div>
     <div class="mb-3">
-      <label for="image" class="form-label">Выберите фотографию:</label>
-      <input type="file" name="image" id="image" class="form-control" accept=".jpg, .jpeg, .png, .webp"> 
+      <label for="image" class="form-label">Выберите основное изображение:</label>
+      <input type="file" name="image" id="image" class="form-control" accept=".jpg, .jpeg, .png, .webp">
     </div>
+
+    <!-- Блок дополнительных изображений -->
+    <div class="mb-3">
+      <label class="form-label">Дополнительные изображения (макс. 10):</label>
+      <div id="additional-images-preview" class="d-flex flex-wrap">
+        {% for img in additional_images %}
+          <div class="position-relative m-2">
+            <img src="{{ img.image.url }}" class="img-thumbnail" style="max-width:100px; max-height:100px;">
+            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn" data-image-id="{{ img.id }}">✖</button>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div id="additional-images-container">
+        <div class="additional-image-input mb-2">
+          <input type="file" name="additional_images" class="form-control additional-image" accept=".jpg, .jpeg, .png, .webp">
+        </div>
+      </div>
+      <button type="button" id="add-image-btn" class="btn btn-secondary btn-sm mt-2">Добавить изображение</button>
+    </div>
+
     <div class="mb-3">
       <label for="original_price" class="form-label">Оригинальная цена:</label>
       <input type="number" name="original_price" class="form-control" value="{{ item.price }}" required>
     </div>
+
     <div class="mb-3">
       <label for="discounted_price" class="form-label">Цена со скидкой:</label>
       <small>Оставьте пустым если хотите вернуть/оставить оригинальную цену.</small>
@@ -67,9 +94,10 @@
   </form>
 </div>
 
+<!-- Скрипты -->
 <script>
   function updateAvatarPreview() {
-    var input = document.getElementById('avatar');
+    var input = document.getElementById('image');
     var preview = document.getElementById('avatar-preview');
 
     input.addEventListener('change', function () {
@@ -83,14 +111,56 @@
         };
 
         reader.readAsDataURL(file);
-      } else {
-        preview.src = "{{ user_profile.get_avatar_url }}";
       }
     });
   }
 
-  window.onload = updateAvatarPreview;
+ window.onload = function () {
+    updateAvatarPreview();
+
+    const maxImages = 10;
+    const addImageButton = document.getElementById('add-image-btn');
+    const additionalImagesContainer = document.getElementById('additional-images-container');
+
+    addImageButton.addEventListener('click', function () {
+      const imageInputs = additionalImagesContainer.getElementsByClassName('additional-image');
+
+      if (imageInputs.length < maxImages) {
+        const newInputDiv = document.createElement('div');
+        newInputDiv.classList.add('additional-image-input', 'mb-2');
+        newInputDiv.innerHTML = '<input type="file" name="additional_images" class="form-control additional-image" accept=".jpg, .jpeg, .png, .webp">';
+        additionalImagesContainer.appendChild(newInputDiv);
+      } else {
+        alert("Можно загрузить не более 10 дополнительных изображений.");
+      }
+    });
+
+    document.querySelectorAll('.remove-image-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const imageId = this.getAttribute('data-image-id');
+        const parentDiv = this.parentElement;
+
+        fetch(`/delete_item_image/${imageId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          }
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              parentDiv.remove();
+            } else {
+              alert(data.error || "Ошибка при удалении изображения.");
+            }
+          })
+          .catch(error => {
+            alert("Ошибка при удалении изображения.");
+            console.error(error);
+          });
+      });
+    });
+  };
 </script>
 
 {% endblock main %}
-

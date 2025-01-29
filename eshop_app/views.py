@@ -16,18 +16,18 @@ from django.views.generic import (
     View,
     TemplateView,
 )
+import logging
 from eshop_app import models
 from django.db.models import Q
 from django.urls import reverse
 from django.contrib import messages
+from django.http import HttpResponse
 from django.utils.translation import activate
+from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.core.files.storage import default_storage
 from eshop_app.utils import decorator_error_handler, password_check
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.template.loader import render_to_string
-from django.http import HttpResponse
-from django.utils.decorators import method_decorator
-import logging
 
 logger = logging.getLogger(__name__)
 class AboutView(TemplateView):
@@ -227,7 +227,6 @@ def create_item(request):
 
         try:
             category = get_object_or_404(models.CategoryItem, id=category_id)
-
             author = request.user if request.user.is_authenticated else None
 
             item = models.Item.objects.create(
@@ -239,15 +238,20 @@ def create_item(request):
                 author=author,
             )
 
-            messages.success(request, "Item created successfully.")
+            additional_images = request.FILES.getlist("additional_images")
+            for img in additional_images:
+                models.ItemImage.objects.create(item=item, image=img)
+
+            messages.success(request, "Товар успешно создан.")
 
             return redirect("product_detail", product_id=item.id)
 
         except models.CategoryItem.DoesNotExist:
-            messages.error(request, "Selected Category does not exist.")
+            messages.error(request, "Выбранная категория не существует.")
 
     categories = models.CategoryItem.objects.all()
     return render(request, "create_product.html", context={"categories": categories})
+
 
 
 @login_required
@@ -258,42 +262,43 @@ def modify_item(request, item_id):
 
     if request.method == "POST":
         title = request.POST.get("title")
+        description = request.POST.get("description")
         original_price = request.POST.get("original_price")
         discounted_price = request.POST.get("discounted_price")
         category_id = request.POST.get("category")
         tags_ids = request.POST.getlist("tags")
-        is_active = True if request.POST.get("is_active", None) else False
+        is_active = request.POST.get("is_active") == "on"
 
         item.title = title
+        item.description = description
         item.price = int(original_price)
-        item.discounted_price = (
-            int(discounted_price)
-            if discounted_price and discounted_price.strip()
-            else None
-        )
-        item.category = models.CategoryItem.objects.get(id=category_id)
+        item.discounted_price = int(discounted_price) if discounted_price and discounted_price.strip() else None
+        item.category = get_object_or_404(models.CategoryItem, id=category_id)
         item.tags.set(models.TagItem.objects.filter(id__in=tags_ids))
         item.is_active = is_active
 
         new_image = request.FILES.get("image")
         if new_image:
-            if item.image.name and item.image.name != "nodatafound.png":
+            if item.image and item.image.name and item.image.name != "nodatafound.png":
                 default_storage.delete(item.image.name)
-
             image_extension = new_image.name.split(".")[-1]
             new_image_name = f"{item.title.replace(' ', '_')}.{image_extension}"
             item.image.save(new_image_name, new_image)
 
-        item.save()
+        new_additional_images = request.FILES.getlist("additional_images")
+        for img in new_additional_images:
+            models.ItemImage.objects.create(item=item, image=img)
 
+        item.save()
         return redirect(reverse("product_detail", args=[item.id]))
+
+    additional_images = item.images.all()
 
     return render(
         request,
         "modify_item.html",
-        {"item": item, "categories": categories, "tags": tags},
+        {"item": item, "categories": categories, "tags": tags, "additional_images": additional_images},
     )
-
 
 @decorator_error_handler
 def add_review(request, product_id):
@@ -311,7 +316,7 @@ def product_detail(request, product_id):
     try:
         product = get_object_or_404(models.Item, id=product_id)
     except models.Item.DoesNotExist:
-        raise Http404("Product not found")
+        raise Http404("Товар не найден")
 
     reviews = models.Review.objects.filter(product=product).order_by("-created_at")
 
@@ -328,6 +333,9 @@ def product_detail(request, product_id):
     except EmptyPage:
         paginated_reviews = paginator.page(paginator.num_pages)
 
+    # Получение дополнительных изображений
+    additional_images = product.images.all()
+
     if (
         request.method == "POST"
         and request.user.is_authenticated
@@ -339,7 +347,7 @@ def product_detail(request, product_id):
         try:
             review = models.Review.objects.get(id=review_id, product=product)
         except models.Review.DoesNotExist:
-            raise Http404("Review not found")
+            raise Http404("Отзыв не найден")
 
         if action == "hide":
             review.is_visible = False
@@ -378,8 +386,10 @@ def product_detail(request, product_id):
             "total_rating_value": _total_rating_value,
             "is_my_rating": _is_my_rating,
             "selected_language": selected_language,
+            "additional_images": additional_images,
         },
     )
+
 
 
 def delete_review(request, product_id):
@@ -851,3 +861,27 @@ def update_order_status(request, order_id):
 def order_detail_user(request, order_id):
     order = get_object_or_404(models.Order, id=order_id, user=request.user)
     return render(request, "order_confirmation_user.html", {"order": order})
+
+
+
+@csrf_exempt  
+@login_required
+def delete_item_image(request, image_id):
+    if request.method == 'POST':
+        item_image = get_object_or_404(models.ItemImage, id=image_id)
+
+        if item_image.item.author != request.user:
+            logger.warning(f"Попытка удалить изображение товара не автором: {request.user.username}")
+            return JsonResponse({'success': False, 'error': 'Вы не являетесь владельцем этого изображения.'}, status=403)
+
+        try:
+            if item_image.image:
+                item_image.image.delete()
+            item_image.delete()
+            logger.info(f"Изображение товара {item_image.id} удалено")
+            return JsonResponse({'success': True, 'message': 'Изображение успешно удалено.'})
+        except Exception as e:
+            logger.error(f"Ошибка при удалении изображения товара: {e}")
+            return JsonResponse({'success': False, 'error': f'Ошибка при удалении: {str(e)}'}, status=500)
+    logger.warning("Недопустимый метод запроса")
+    return JsonResponse({'success': False, 'error': 'Недопустимый метод запроса.'}, status=405)

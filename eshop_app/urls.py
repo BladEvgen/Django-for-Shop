@@ -32,6 +32,7 @@ urlpatterns = [
     path("rating/<str:item_id>/<str:is_like>/", views.rating, name="rating"),
     path("profile/<str:username>/change_data/", views.change_data, name="change_data"),
     path("delete_review/<int:product_id>/", views.delete_review, name="delete_review"),
+    path('delete_item_image/<int:image_id>/', views.delete_item_image, name='delete_item_image'),
     # ! CHAT WITH TOKEN
     path("chat/", views.chat, name="chat"),
     path("chat/<slug:room_slug>/<str:token>/", views.room, name="room"),
