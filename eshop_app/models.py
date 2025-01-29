@@ -232,6 +232,11 @@ class Item(models.Model):
         return re.sub(r"[^\w\s-]", "", self.title).replace(" ", "_").lower()
     
     def save(self, *args, **kwargs):
+        if self.discounted_price and self.price > 0:
+            self.discount_percentage = self.calculate_discount_percentage()
+        else:
+            self.discount_percentage = 0.0
+
         import os
         from eshop_app.utils import transliterate
         from django.core.files.storage import default_storage
@@ -249,6 +254,7 @@ class Item(models.Model):
             self.image.name = new_filename
 
         super().save(*args, **kwargs)
+        
     def get_image_url(self):
         return self.image.url if self.image else None
     def get_additional_images(self):

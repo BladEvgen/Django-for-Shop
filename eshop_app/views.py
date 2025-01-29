@@ -184,30 +184,44 @@ def user_items(request):
 @login_required
 def change_data(request, username):
     user_profile = get_object_or_404(models.UserProfile, user=request.user)
-
+    
     if request.method == "POST":
         email = request.POST.get("email")
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
-
+        avatar = request.FILES.get("avatar")
+        
+        logger.info(f"Полученные данные: email={email}, first_name={first_name}, last_name={last_name}, avatar={avatar}")
+        
         request.user.email = email
         request.user.first_name = first_name
         request.user.last_name = last_name
         request.user.save()
 
-        avatar = request.FILES.get("avatar")
         if avatar:
             old_avatar = user_profile.avatar
-
+            
             if old_avatar and os.path.basename(old_avatar.name) == "user.png":
-                pass
+                logger.info("Старый аватар - это стандартное изображение, не удаляем.")
             else:
                 if old_avatar and os.path.isfile(old_avatar.path):
-                    os.remove(old_avatar.path)
-
+                    try:
+                        os.remove(old_avatar.path)
+                        logger.info(f"Старый аватар {old_avatar.path} удалён.")
+                    except Exception as e:
+                        logger.error(f"Ошибка при удалении старого аватара: {e}")
+                
                 user_profile.avatar = avatar
-
-        user_profile.save()
+                logger.info("Новый аватар сохранён.")
+        else:
+            logger.info("Аватар не был загружен.")
+        
+        try:
+            user_profile.save()
+            logger.info("Профиль пользователя успешно обновлён.")
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении профиля: {e}")
+        
         return HttpResponseRedirect(reverse("profile", args=[username]))
 
     return render(request, "change_data.html", {"user_profile": user_profile})
