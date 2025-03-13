@@ -1,126 +1,348 @@
 {% extends "components/base.html" %}
-
-{% block title %}Login{% endblock title %}
-
+{% load static %}
+{% block title %}Login | ElectroHub{% endblock title %}
 {% block main %}
-<!-- Подключение Animate.css -->
-
 <style>
+    .login-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 30px 0;
+    }
+
     .login-container {
+        width: 100%;
         max-width: 450px;
-        margin: auto;
         padding: 40px;
-        border-radius: 15px;
+        border-radius: 12px;
         background: #ffffff;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        animation: fadeInDown 1s;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    .login-header {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .login-header h2 {
+        color: #28a745;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .login-header p {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .brand-logo {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 15px;
+        padding: 15px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .brand-logo:hover {
+        transform: scale(1.1) rotate(10deg);
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+        position: relative;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #333333;
+        margin-bottom: 8px;
+        display: block;
     }
 
     .form-control {
-        border-radius: 25px;
-        padding: 15px;
+        width: 100%;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 15px;
         font-size: 1rem;
-        transition: box-shadow 0.3s ease;
+        transition: all 0.25s ease-in-out;
+        background-color: #f9f9f9;
     }
     
     .form-control:focus {
-        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+        background-color: #ffffff;
+        border-color: #28a745;
     }
 
-    .btn-login {
-        border-radius: 25px;
-        font-size: 1.2rem;
-        padding: 12px;
-        width: 100%;
-        background: linear-gradient(135deg, #007bff, #0056b3);
-        color: white;
-        transition: all 0.3s ease-in-out;
-        animation: bounceIn 1s;
+    .input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
     }
 
-    .btn-login:hover {
-        background: linear-gradient(135deg, #0056b3, #003d80);
-        transform: scale(1.05);
+    .input-group-text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 15px;
+        border: 1px solid #dee2e6;
+        border-right: 0;
+        border-radius: 8px 0 0 8px;
+        background-color: #f9f9f9;
+        color: #6c757d;
+    }
+
+    .border-start-0 {
+        border-left: 0;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
     }
 
     .password-wrapper {
         position: relative;
     }
 
-
-    .password-wrapper .toggle-icon {
+    .password-toggle {
         position: absolute;
         right: 15px;
         top: 50%;
+        transform: translateY(-50%);
         cursor: pointer;
         color: #6c757d;
-        transition: color 0.3s ease;
+        transition: color 0.25s ease;
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 36px;
+        z-index: 2;
     }
 
-    .password-wrapper .toggle-icon:hover {
-        color: #007bff;
+    .password-toggle:hover {
+        color: #28a745;
     }
 
-    .forgot-password {
-        text-align: center;
-        margin-top: 15px;
-        animation: fadeInUp 1.5s;
+    .password-toggle i {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
     }
 
-    .forgot-password a {
-        color: #007bff;
+    .btn-login {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #28a745, #218838);
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        margin-top: 10px;
+    }
+
+    .btn-login:hover:not(:disabled) {
+        background: linear-gradient(135deg, #218838, #1e7e34);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-login:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .btn-login:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-login i {
+        margin-right: 8px;
+    }
+
+    .remember-forgot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        margin: 15px 0;
+    }
+
+    .form-check-input {
+        margin-right: 8px;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+    }
+
+    .forgot-link {
+        color: #28a745;
         text-decoration: none;
         transition: color 0.3s ease;
     }
 
-    .forgot-password a:hover {
-        color: #0056b3;
+    .forgot-link:hover {
+        color: #1e7e34;
+        text-decoration: underline;
+    }
+
+    .register-link {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.95rem;
+    }
+
+    .register-link a {
+        color: #28a745;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .register-link a:hover {
+        color: #1e7e34;
+        text-decoration: underline;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Alert styles */
+    .alert-error {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        animation: shake 0.5s;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    .progress {
+        height: 4px;
+        background-color: #e9ecef;
+        border-radius: 2px;
+        margin-bottom: 20px;
+    }
+
+    .progress-bar {
+        background-color: #28a745;
+        border-radius: 2px;
     }
 </style>
 
-<div class="container mt-5 animate__animated animate__fadeIn">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="login-container animate__animated animate__zoomIn">
-                <h2 class="text-center mb-4 animate__animated animate__pulse animate__infinite">Welcome Back!</h2>
-                <p class="text-center text-muted">Пожалуйста, введите свои учетные данные, чтобы войти.</p>
-                <form method="post" action="{% url 'login' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Имя пользователя</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-                    <div class="mb-3 password-wrapper">
-                        <label for="password" class="form-label">Пароль</label>
-                        <input type="password" class="form-control pl-5" id="password" name="password" required>
-                        <span class="toggle-icon" onclick="togglePasswordVisibility()">
-                            <i class="fas fa-eye" id="togglePasswordIcon"></i>
-                        </span>
-                    </div>
-                    <button type="submit" class="btn btn-login">Войти</button>
-                    <div class="forgot-password">
-                        <a href="{% url 'password_reset_request' %}">Забыли пароль?</a>
-                    </div>
-                </form>
+<div class="login-section">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="brand-logo">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 5H11V11H5V13H11V19H13V13H19V11H13V5Z" fill="#28a745"/>
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#28a745" stroke-width="2"/>
+                </svg>
+            </div>
+            <div class="text-center mb-3">
+                <span class="badge bg-success p-2 mb-2">Вход</span>
+                <h2>Добро пожаловать!</h2>
+                <p>Войдите в свой аккаунт, чтобы продолжить</p>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
         </div>
+        
+        {% if error %}
+        <div class="alert-error" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <form method="post" action="{% url 'login' %}" id="loginForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="username" class="form-label">Имя пользователя</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-user text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0" id="username" name="username" required autofocus placeholder="Введите имя пользователя">
+                </div>
+            </div>
+            
+            <div class="form-group password-wrapper">
+                <label for="password" class="form-label">Пароль</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-lock text-muted"></i></span>
+                    <input type="password" class="form-control border-start-0" id="password" name="password" required placeholder="Введите пароль">
+                    <button type="button" class="password-toggle" id="togglePassword">
+                        <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="remember-forgot">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="rememberCheck" name="remember_me">
+                    <label class="form-check-label" for="rememberCheck">
+                        Запомнить меня
+                    </label>
+                </div>
+                <a href="{% url 'password_reset_request' %}" class="forgot-link">Забыли пароль?</a>
+            </div>
+            
+            <button type="submit" class="btn-login">
+                <i class="fas fa-sign-in-alt"></i>Войти
+            </button>
+            
+            <div class="register-link">
+                Еще нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- JavaScript для переключения видимости пароля -->
 <script>
-    function togglePasswordVisibility() {
+    document.addEventListener('DOMContentLoaded', function() {
         const passwordInput = document.getElementById('password');
-        const toggleIcon = document.getElementById('togglePasswordIcon');
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.classList.remove('fa-eye');
-            toggleIcon.classList.add('fa-eye-slash');
-        } else {
-            passwordInput.type = 'password';
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
-        }
-    }
+        const toggleBtn = document.getElementById('togglePassword');
+        const toggleIcon = document.getElementById('passwordToggleIcon');
+        
+        toggleBtn.addEventListener('click', function() {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            
+            if (type === 'text') {
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        });
+    });
 </script>
 {% endblock main %}
