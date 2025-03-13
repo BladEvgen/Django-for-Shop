@@ -23,6 +23,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
+from django.db import transaction
 from django.contrib import messages
 from django.http import HttpResponse
 from django.core.mail import send_mail
@@ -82,39 +83,65 @@ def home(request):
 def register(request):
     if request.method == "POST":
         username = request.POST.get("username")
+        email = request.POST.get("email")
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
 
+        first_name = request.POST.get("first_name", "")
+        last_name = request.POST.get("last_name", "")
+        phonenumber = request.POST.get("phonenumber", "")
+        address = request.POST.get("address", "")
+
         if password != confirm_password:
-            return render(request, "register.html", {"error": "Passwords do not match"})
+            return render(request, "register.html", {"error": "Пароли не совпадают"})
 
         if not password_check(password):
             return render(
                 request,
                 "register.html",
-                {"error": "Password does not meet the required strength criteria."},
+                {"error": "Пароль не соответствует требованиям безопасности."},
             )
 
         existing_user = User.objects.filter(username=username).exists()
         if existing_user:
-            return render(
-                request, "register.html", {"error": "Username already exists"}
-            )
+            return render(request, "register.html", {"error": "Имя пользователя уже существует"})
 
-        user = User.objects.create_user(
-            username=username,
-            password=password,
-        )
+        if email and User.objects.filter(email=email).exists():
+            return render(request, "register.html", {"error": "Email уже используется"})
 
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect("profile", username=username)
-        else:
+        try:
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                )
+
+                profile, _ = models.UserProfile.objects.get_or_create(user=user)
+
+                if phonenumber:
+                    profile.phonenumber = phonenumber
+                if address:
+                    profile.address = address
+
+                profile.save()
+
+                user = authenticate(request, username=username, password=password)
+                if user is not None:
+                    login(request, user)
+                    messages.success(request, "Регистрация прошла успешно! Добро пожаловать!")
+                    return redirect("profile", username=username)
+                else:
+                    raise Exception("Failed to authenticate user after creation")
+
+        except Exception as e:
+            logger.error(f"Error during registration: {str(e)}")
             return render(
                 request,
                 "register.html",
-                {"error": "Failed to log in. Please try again."},
+                {"error": "Произошла ошибка при регистрации. Пожалуйста, попробуйте снова."},
             )
 
     return render(request, "register.html", context={})
@@ -271,7 +298,6 @@ def create_item(request):
     return render(request, "create_product.html", context={"categories": categories})
 
 
-
 @login_required
 def modify_item(request, item_id):
     item = get_object_or_404(models.Item, id=item_id)
@@ -407,7 +433,6 @@ def product_detail(request, product_id):
             "additional_images": additional_images,
         },
     )
-
 
 
 def delete_review(request, product_id):
@@ -653,7 +678,7 @@ class SearchUsersView(ModerateUsersView):
         else:
             return super().get(request, *args, **kwargs)
 
-        
+
 class BanUsersView(ModerateUsersView):
     @method_decorator(check_access_slug(slug="UsersModeratePage_ban"))
     def get(self, request, user_id, *args, **kwargs):
@@ -926,7 +951,6 @@ def order_detail_user(request, order_id):
     return render(request, "order_confirmation_user.html", {"order": order})
 
 
-
 @csrf_exempt  
 @login_required
 def delete_item_image(request, image_id):
@@ -948,7 +972,6 @@ def delete_item_image(request, image_id):
             return JsonResponse({'success': False, 'error': f'Ошибка при удалении: {str(e)}'}, status=500)
     logger.warning("Недопустимый метод запроса")
     return JsonResponse({'success': False, 'error': 'Недопустимый метод запроса.'}, status=405)
-
 
 
 def password_reset_request_view(request):
