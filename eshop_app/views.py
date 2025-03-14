@@ -612,7 +612,7 @@ class ModerateUsersView(TemplateView):
 
     @method_decorator(check_access_slug(slug="UsersModeratePage_view"))
     def get(self, request, *args, **kwargs):
-        logger.info("Запрос на страницу модерации пользователей") 
+        logger.info("Запрос на страницу модерации пользователей")
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
@@ -620,12 +620,26 @@ class ModerateUsersView(TemplateView):
         context = super().get_context_data(**kwargs)
         users = User.objects.select_related('profile').all()
 
+        import datetime
+        from django.utils import timezone
+
+        active_users_count = users.filter(is_active=True).count()
+
+        banned_users_count = users.filter(is_active=False).count()
+
+        seven_days_ago = timezone.now() - datetime.timedelta(days=7)
+        new_users_count = users.filter(date_joined__gte=seven_days_ago).count()
+
+        context['active_users_count'] = active_users_count
+        context['banned_users_count'] = banned_users_count
+        context['new_users_count'] = new_users_count
+
         query = self.request.GET.get('q', '').strip()
         if query:
             users = users.filter(username__icontains=query)
 
-        sort_field = self.request.GET.get('sort', 'username')  
-        sort_order = self.request.GET.get('order', 'asc')      
+        sort_field = self.request.GET.get('sort', 'username')
+        sort_order = self.request.GET.get('order', 'asc')
 
         if sort_field not in ['username', 'date_joined']:
             sort_field = 'username'
@@ -637,7 +651,7 @@ class ModerateUsersView(TemplateView):
 
         logger.debug(f"Сортировка: поле={sort_field}, порядок={sort_order}")
 
-        paginator = Paginator(users, 10)  
+        paginator = Paginator(users, 10)
         page_number = self.request.GET.get('page')
         try:
             page_obj = paginator.get_page(page_number)
@@ -645,18 +659,23 @@ class ModerateUsersView(TemplateView):
             logger.warning(f"Страница {page_number} вне диапазона, показываем последнюю страницу")
             page_obj = paginator.get_page(paginator.num_pages)
         except PageNotAnInteger:
-            logger.warning(f"Номер страницы {page_number} не является целым числом, показываем первую страницу")
+            logger.warning(
+                f"Номер страницы {page_number} не является целым числом, показываем первую страницу"
+            )
             page_obj = paginator.get_page(1)
         except Exception as e:
-            logger.error(f"Ошибка пагинации: {e}") 
-            page_obj = paginator.get_page(1) 
+            logger.error(f"Ошибка пагинации: {e}")
+            page_obj = paginator.get_page(1)
 
         context['users'] = page_obj
         context['search_query'] = query
         context['current_sort'] = self.request.GET.get('sort', 'username')
         context['current_order'] = self.request.GET.get('order', 'asc')
-        logger.debug(f"Контекст: search_query={query}, current_sort={context['current_sort']}, current_order={context['current_order']}")
+        logger.debug(
+            f"Контекст: search_query={query}, current_sort={context['current_sort']}, current_order={context['current_order']}"
+        )
         return context
+
 
 class SearchUsersView(ModerateUsersView):
     @method_decorator(check_access_slug(slug="UsersModeratePage_view"))
@@ -667,12 +686,16 @@ class SearchUsersView(ModerateUsersView):
             html = render_to_string(
                 "components/_user_list.html",
                 {
-                    'users': context['users'], 
+                    'users': context['users'],
                     'search_query': context['search_query'],
-                    'current_sort': context['current_sort'],    
-                    'current_order': context['current_order'],  
+                    'current_sort': context['current_sort'],
+                    'current_order': context['current_order'],
+                    'total_count': context['users'].paginator.count,
+                    'active_users_count': context['active_users_count'],
+                    'banned_users_count': context['banned_users_count'],
+                    'new_users_count': context['new_users_count'],
                 },
-                request=request
+                request=request,
             )
             return HttpResponse(html)
         else:
