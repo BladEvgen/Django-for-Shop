@@ -13,6 +13,7 @@ class Command(BaseCommand):
         "UsersModeratePage_ban": "Блокировка пользователя на странице модерации.",
         "UsersModeratePage_unban": "Разблокировка пользователя на странице модерации.",
         "UsersModeratePage_delete": "Удаление пользователя на странице модерации.",
+        "CreateItemTag": "Создание тега товара.",
     }
 
     def handle(self, *args, **kwargs):
