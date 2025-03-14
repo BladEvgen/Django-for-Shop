@@ -54,7 +54,7 @@ class UserProfile(models.Model):
                 return True
             return False
         except Exception as error:
-            logger.error("error check_access: ", error)
+            logger.error(f"error check_access: {error}")
             return False
 
     def get_actions(self):
@@ -269,7 +269,7 @@ class Item(models.Model):
     def __str__(self):
         status = "Активен" if self.is_active else "Продано"
         return f"Товар(id={self.id}, Название={self.title}, Цена={self.price}, Категория={self.category.title}, Статус={status})"
-    
+
 class ItemImage(models.Model):
     item = models.ForeignKey(
         Item, related_name="images", on_delete=models.CASCADE, verbose_name="Товар"
@@ -299,7 +299,7 @@ class ItemImage(models.Model):
             self.image.name = f"{clean_title}_additional_{self.pk or ''}{extension}".lower()
 
         super().save(*args, **kwargs)
-        
+
 class Cart(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name="Пользователь"
@@ -593,8 +593,6 @@ class Message(models.Model):
         return f"Сообщение от {self.user.username} в {self.room.name}: {truncated_content} ({self.date_added})"
 
 
-
-
 class PasswordResetTokenManager(models.Manager):
     def mark_as_used(self, token):
         token_obj = self.filter(token=token, _used=False).first()
@@ -680,4 +678,3 @@ class PasswordResetRequestLog(models.Model):
     class Meta:
         verbose_name = "Лог запросов на сброс пароля"
         verbose_name_plural = "Логи запросов на сброс пароля"
-
