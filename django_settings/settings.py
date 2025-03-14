@@ -27,6 +27,7 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
+
 # Function to get the local IP address
 def get_local_ip():
     try:
@@ -141,35 +142,31 @@ else:
 
 DATABASES = {"default": {}}
 
-
-if DEBUG:
-    # If debug using SQLite3
+if DB_TYPE == "sqlite3":
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
+elif DB_TYPE == "postgresql":
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME", "forum_app"),
+        "USER": os.getenv("DB_USER", "django-admin"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "5432"),
+    }
+elif DB_TYPE == "mysql":
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT", "3306"),
+    }
 else:
-    # If production using MySQL or PostgreSQL
-    if DB_TYPE == "mysql":
-        DATABASES["default"] = {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "HOST": os.getenv("DB_HOST"),
-            "PORT": os.getenv("DB_PORT", "3306"),
-        }
-    elif DB_TYPE == "postgresql":
-        DATABASES["default"] = {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "HOST": os.getenv("DB_HOST"),
-            "PORT": os.getenv("DB_PORT", "5432"),
-        }
-    else:
-        raise ValueError(f"Unsupported database type: {DB_TYPE}")
+    raise ValueError(f"Unsupported database type: {DB_TYPE}")
 
 
 AUTH_PASSWORD_VALIDATORS = [
