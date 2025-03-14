@@ -1,5 +1,13 @@
 {% load django_app_filters_and_tags %}
 
+<div id="userListContainer" 
+    data-current-sort="{{ current_sort|default:'username' }}" 
+    data-current-order="{{ current_order|default:'asc' }}"
+    data-total-count="{{ total_count|default:'0' }}"
+    data-active-count="{{ active_users_count|default:'0' }}"
+    data-banned-count="{{ banned_users_count|default:'0' }}"
+    data-new-count="{{ new_users_count|default:'0' }}">
+
 {% if users %}
 <div class="table-responsive">
     <table class="table table-hover table-bordered align-middle" id="userTable">
@@ -77,8 +85,8 @@
     </table>
 </div>
 
-<!-- Пагинация -->
 {% include "components/paginator.html" with reviews=users search_query=search_query current_sort=current_sort current_order=current_order %}
 {% else %}
 <p class="text-center text-muted">Пользователи не найдены.</p>
 {% endif %}
+</div>

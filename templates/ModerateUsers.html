@@ -6,22 +6,150 @@
 {% block title %}Модерация пользователей{% endblock title %}
 
 {% block main %}
-<div class="container mt-5">
-    <h2 class="text-center mb-4 text-primary">Модерация пользователей</h2>
-
-    <!-- Поле поиска -->
-    <div class="row justify-content-center mb-4">
-        <div class="col-md-8">
-            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Поиск по имени пользователя...">
+<div class="container px-4">
+    <!-- Header area with stats cards -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h2 class="mb-0 text-primary">
+                    <i class="fas fa-users-cog me-2"></i>Модерация пользователей
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'ModerateSiteView' %}">Модерация</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Пользователи</li>
+                    </ol>
+                </nav>
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <!-- Total users stats card -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon bg-primary-soft rounded-circle me-3">
+                                    <i class="fas fa-users text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">Всего пользователей</h6>
+                                    <h3 class="fw-bold mb-0" id="totalUsersCount">{{ users.paginator.count|default:"0" }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active users stats card -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon bg-success-soft rounded-circle me-3">
+                                    <i class="fas fa-user-check text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">Активных</h6>
+                                    <h3 class="fw-bold mb-0" id="activeUsersCount">{{ active_users_count|default:"0" }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Banned users stats card -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon bg-danger-soft rounded-circle me-3">
+                                    <i class="fas fa-user-slash text-danger"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">Заблокированных</h6>
+                                    <h3 class="fw-bold mb-0" id="bannedUsersCount">{{ banned_users_count|default:"0" }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New users stats card -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon bg-info-soft rounded-circle me-3">
+                                    <i class="fas fa-user-plus text-info"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">Новых за 7 дней</h6>
+                                    <h3 class="fw-bold mb-0" id="newUsersCount">{{ new_users_count|default:"0" }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Список пользователей -->
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div id="userListContainer" data-current-sort="username" data-current-order="asc">
-                {% include "components/_user_list.html" with reviews=users %}
+    <!-- Main content area -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white p-4 border-0">
+                    <div class="row g-3 align-items-center">
+                        <!-- Search field -->
+                        <div class="col-lg-4 col-md-6 col-sm-12">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input 
+                                    type="text" 
+                                    id="searchInput" 
+                                    class="form-control border-start-0 ps-0" 
+                                    placeholder="Поиск по имени пользователя..."
+                                    aria-label="Поиск пользователей"
+                                    value="{{ search_query|default:'' }}"
+                                >
+                                <button class="btn btn-outline-secondary border-0 d-none" type="button" id="clearSearch">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="col-lg-4 col-md-12 col-sm-12">
+                          <div class="d-flex justify-content-end gap-2">
+                              <button type="button" class="btn btn-primary" id="searchButton">
+                                  <i class="fas fa-search"></i> <span class="d-none d-md-inline ms-1">Поиск</span>
+                              </button>
+                          </div>
+                      </div>
+                    </div>
+                </div>
+                
+                <!-- User list container -->
+                <div class="card-body p-0">
+                    <div id="userListContainer" 
+                        data-current-sort="{{ current_sort|default:'username' }}" 
+                        data-current-order="{{ current_order|default:'asc' }}">
+                        {% include "components/_user_list.html" with users=users %}
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none align-items-center justify-content-center bg-white bg-opacity-75" style="z-index: 1050;">
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-2" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <p class="mb-0 fw-medium">Загрузка данных...</p>
         </div>
     </div>
 </div>
@@ -29,91 +157,301 @@
 <script src="{% static 'js/confrim_delete_user.js' %}"></script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
     const userListContainer = document.getElementById('userListContainer');
-    let debounceTimeout = null;
-
+    const searchButton = document.getElementById('searchButton');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    
     let currentSort = userListContainer.getAttribute('data-current-sort') || 'username';
     let currentOrder = userListContainer.getAttribute('data-current-order') || 'asc';
-
-    // Получение списка пользователей
-    function fetchUsers(query, page=1, sort=currentSort, order=currentOrder) {
-      const url = new URL("{% url 'search_users' %}", window.location.origin);
-      url.searchParams.append('q', query);
-      url.searchParams.append('page', page);
-      url.searchParams.append('sort', sort);
-      url.searchParams.append('order', order);
-
-      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    
+    function showLoading() {
+        loadingOverlay.classList.remove('d-none');
+        loadingOverlay.classList.add('d-flex');
+    }
+    
+    function hideLoading() {
+        loadingOverlay.classList.remove('d-flex');
+        loadingOverlay.classList.add('d-none');
+    }
+    
+    function toggleClearButton() {
+        if (searchInput.value.trim()) {
+            clearSearchBtn.classList.remove('d-none');
+        } else {
+            clearSearchBtn.classList.add('d-none');
+        }
+    }
+    
+    function fetchUsers(query = '', page = 1, sort = currentSort, order = currentOrder) {
+        showLoading();
+        
+        const url = new URL("{% url 'search_users' %}", window.location.origin);
+        url.searchParams.append('q', query);
+        url.searchParams.append('page', page);
+        url.searchParams.append('sort', sort);
+        url.searchParams.append('order', order);
+        
+        fetch(url, { 
+            headers: { 'X-Requested-With': 'XMLHttpRequest' } 
+        })
         .then(response => response.text())
         .then(html => {
-          userListContainer.innerHTML = html;
-          currentSort = userListContainer.getAttribute('data-current-sort') || 'username';
-          currentOrder = userListContainer.getAttribute('data-current-order') || 'asc';
+            userListContainer.innerHTML = html;
+            
+            updateUserStats();
+            
+            currentSort = userListContainer.getAttribute('data-current-sort') || 'username';
+            currentOrder = userListContainer.getAttribute('data-current-order') || 'asc';
+            
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('q', query);
+            currentUrl.searchParams.set('page', page);
+            currentUrl.searchParams.set('sort', sort);
+            currentUrl.searchParams.set('order', order);
+            window.history.replaceState({}, '', currentUrl);
+            
+            hideLoading();
         })
-        .catch(error => console.error('Ошибка при получении данных:', error));
+        .catch(error => {
+            console.error('Ошибка при получении данных:', error);
+            hideLoading();
+            
+            const errorAlert = document.createElement('div');
+            errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+            errorAlert.innerHTML = `
+                <strong>Ошибка!</strong> Не удалось загрузить список пользователей.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            userListContainer.prepend(errorAlert);
+        });
     }
-
-    // Обработка поиска
-    searchInput.addEventListener('input', function() {
-      const query = searchInput.value.trim();
-
-      if (debounceTimeout) clearTimeout(debounceTimeout);
-
-      debounceTimeout = setTimeout(() => {
-        fetchUsers(query);
-      }, 300); // Задержка 300 мс
+    
+    function updateUserStats() {
+        const totalElement = document.getElementById('totalUsersCount');
+        const activeElement = document.getElementById('activeUsersCount');
+        const bannedElement = document.getElementById('bannedUsersCount');
+        const newElement = document.getElementById('newUsersCount');
+        
+        if (totalElement) {
+            const totalCount = userListContainer.getAttribute('data-total-count');
+            if (totalCount) totalElement.textContent = totalCount;
+        }
+        
+        if (activeElement) {
+            const activeCount = userListContainer.getAttribute('data-active-count');
+            if (activeCount) activeElement.textContent = activeCount;
+        }
+        
+        if (bannedElement) {
+            const bannedCount = userListContainer.getAttribute('data-banned-count');
+            if (bannedCount) bannedElement.textContent = bannedCount;
+        }
+        
+        if (newElement) {
+            const newCount = userListContainer.getAttribute('data-new-count');
+            if (newCount) newElement.textContent = newCount;
+        }
+    }
+    
+    searchButton.addEventListener('click', function() {
+        const query = searchInput.value.trim();
+        fetchUsers(query, 1, currentSort, currentOrder);
     });
-
-    // Обработка кликов на ссылки сортировки и пагинации
+    
+    searchInput.addEventListener('keyup', function(e) {
+        toggleClearButton();
+        if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
+            fetchUsers(query, 1, currentSort, currentOrder);
+        }
+    });
+    
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        toggleClearButton();
+        fetchUsers('', 1, currentSort, currentOrder);
+    });
+    
     userListContainer.addEventListener('click', function(e) {
-      if (e.target.tagName === 'A' && e.target.closest('.pagination')) {
-        e.preventDefault();
-        const url = new URL(e.target.href);
-        const query = searchInput.value.trim();
-        const page = url.searchParams.get('page') || 1;
-        const sort = url.searchParams.get('sort') || currentSort;
-        const order = url.searchParams.get('order') || currentOrder;
-
-        fetchUsers(query, page, sort, order);
-      }
-
-      if (e.target.classList.contains('sort-link') || e.target.closest('.sort-link')) {
-        e.preventDefault();
-        let sortLink = e.target.closest('.sort-link');
-        const url = new URL(sortLink.href);
-        const sort = url.searchParams.get('sort') || 'username';
-        const order = url.searchParams.get('order') || 'asc';
-
-        currentSort = sort;
-        currentOrder = order;
-
-        const query = searchInput.value.trim();
-        fetchUsers(query, 1, sort, order);
-      }
+        if (e.target.tagName === 'A' && e.target.closest('.pagination')) {
+            e.preventDefault();
+            const url = new URL(e.target.href);
+            const query = searchInput.value.trim();
+            const page = url.searchParams.get('page') || 1;
+            
+            fetchUsers(query, page, currentSort, currentOrder);
+        }
+        
+        if (e.target.classList.contains('sort-link') || e.target.closest('.sort-link')) {
+            e.preventDefault();
+            const sortLink = e.target.closest('.sort-link');
+            const url = new URL(sortLink.href);
+            const sort = url.searchParams.get('sort') || 'username';
+            const order = url.searchParams.get('order') || 'asc';
+            const query = searchInput.value.trim();
+            
+            currentSort = sort;
+            currentOrder = order;
+            
+            fetchUsers(query, 1, sort, order);
+        }
+        
+        if (e.target.id === 'selectAllUsers') {
+            const checkboxes = userListContainer.querySelectorAll('.user-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+            });
+        }
     });
-  });
+    
+    toggleClearButton();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlQuery = urlParams.get('q') || '';
+    const urlSort = urlParams.get('sort') || 'username';
+    const urlOrder = urlParams.get('order') || 'asc';
+    
+    if (urlQuery) searchInput.value = urlQuery;
+    currentSort = urlSort;
+    currentOrder = urlOrder;
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'f') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+        
+        if (e.key === 'Escape' && document.activeElement === searchInput) {
+            searchInput.value = '';
+            toggleClearButton();
+        }
+    });
+});
 </script>
 
 <style>
-    .form-control {
-        font-size: 16px;
-        padding: 10px;
-        border-radius: 8px;
-    }
+body {
+    background-color: #f8f9fa;
+}
 
-    .btn-outline-primary:hover {
-        background-color: #007bff;
-        color: #fff;
-    }
+.card {
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
 
-    .text-primary {
-        color: #007bff !important;
-    }
+.card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
 
-    .pagination {
-        justify-content: center;
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    border-color: #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: #495057;
+    background-color: #f8f9fa;
+}
+
+.table td, .table th {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-top: 0.15rem;
+}
+
+.stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+}
+
+.bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.15);
+}
+
+.bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.15);
+}
+
+.bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.15);
+}
+
+.bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.15);
+}
+
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    color: #0d6efd;
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
     }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.card {
+    animation: fadeIn 0.3s ease-in-out;
+}
 </style>
 {% endblock main %}

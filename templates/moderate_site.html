@@ -5,113 +5,244 @@
 {% block title %}Модерация сайта{% endblock title %}
 
 {% block main %}
-<div class="container mt-5">
-    <!-- Заголовок -->
-    <h2 class="text-center text-primary mb-4">⚙️ Модерация сайта</h2>
+<div class="container py-5">
+    <!-- Header with improved styling -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="text-center">
+                <h2 class="display-4 text-primary fw-bold">
+                    <i class="fas fa-shield-alt me-2"></i>Модерация сайта
+                </h2>
+                <p class="lead text-muted">Панель управления для администраторов и модераторов</p>
+                <div class="divider"><span></span></div>
+            </div>
+        </div>
+    </div>
 
-    <div class="row">
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+    <!-- Main content - moderation cards -->
+    <div class="row g-4">
+        <!-- Categories Card -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
             {% check_access "CreateItemCategory" as access %}
             {% if access %}
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-center">
-                    <i class="fas fa-boxes fa-3x text-primary mb-3"></i>
-                    <h5 class="card-title">Категории товаров</h5>
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="icon-wrapper mb-3">
+                        <i class="fas fa-boxes fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Категории товаров</h5>
                     <p class="card-text text-muted">
-                        Управляйте категориями товаров, добавляйте или редактируйте их.
+                        Управляйте категориями товаров, добавляйте или редактируйте их структуру и параметры.
                     </p>
-                    <a href="{% url 'create_category_item' %}" class="btn btn-primary btn-sm">
-                        Создать категорию
-                    </a>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'create_category_item' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus-circle me-2"></i>Создать категорию
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 p-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>Последнее обновление: {% now "d.m.Y H:i" %}
+                    </small>
                 </div>
             </div>
             {% endif %}
         </div>
 
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <!-- Users Management Card -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
             {% check_access "UsersModeratePage_view" as access %}
             {% if access %}
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-center">
-                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                    <h5 class="card-title">Управление пользователями</h5>
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="icon-wrapper mb-3">
+                        <i class="fas fa-users fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Управление пользователями</h5>
                     <p class="card-text text-muted">
-                        Просматривайте и модерируйте список пользователей.
+                        Просматривайте и модерируйте список пользователей, управляйте ролями и привилегиями.
                     </p>
-                    <a href="{% url 'moderate_users' %}" class="btn btn-primary btn-sm">
-                        Перейти к модерации
-                    </a>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'moderate_users' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-shield me-2"></i>Перейти к модерации
+                        </a>
+                    </div>
                 </div>
+                {% check_access "UsersModeratePage_ban" as can_ban %}
+                {% check_access "UsersModeratePage_unban" as can_unban %}
+                {% check_access "UsersModeratePage_delete" as can_delete %}
+                {% if can_ban or can_unban or can_delete %}
+                <div class="card-footer bg-white border-0 p-3">
+                    <div class="d-flex justify-content-center gap-2">
+                        {% if can_ban %}<span class="badge bg-success">Бан</span>{% endif %}
+                        {% if can_unban %}<span class="badge bg-info">Разбан</span>{% endif %}
+                        {% if can_delete %}<span class="badge bg-danger">Удаление</span>{% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
         </div>
 
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <!-- Tags Card -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
             {% check_access "CreateItemTag" as access %}
             {% if access %}
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-center">
-                    <i class="fas fa-tags fa-3x text-primary mb-3"></i>
-                    <h5 class="card-title">Тэги товаров</h5>
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="icon-wrapper mb-3">
+                        <i class="fas fa-tags fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Тэги товаров</h5>
                     <p class="card-text text-muted">
-                        Управляйте тэгами товаров, добавляйте или редактируйте их.
+                        Управляйте тэгами товаров, добавляйте новые или редактируйте существующие метки.
                     </p>
-                    <a href="{% url 'create_tag_item' %}" class="btn btn-primary btn-sm">
-                        Создать Тэг
-                    </a>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'create_tag_item' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus-circle me-2"></i>Создать тэг
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 p-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>Управление тэгами
+                    </small>
                 </div>
             </div>
             {% endif %}
         </div>
 
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <!-- Admin Settings Card -->
+        <div class="col-lg-4 col-md-6 col-sm-12">
             {% if request.user.is_authenticated and request.user.is_superuser %}
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-center">
-                    <i class="fas fa-cogs fa-3x text-primary mb-3"></i>
-                    <h5 class="card-title">Настройки сайта</h5>
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="icon-wrapper mb-3">
+                        <i class="fas fa-cogs fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Настройки сайта</h5>
                     <p class="card-text text-muted">
-                        Управляйте основными параметрами и настройками сайта.
+                        Управляйте основными параметрами и настройками сайта, включая системные конфигурации.
                     </p>
-                    <a href="{% url 'admin:index' %}" class="btn btn-primary btn-sm">
-                        Настроить сайт
-                    </a>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'admin:index' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-wrench me-2"></i>Настроить сайт
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 p-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>Только для администраторов
+                    </small>
                 </div>
             </div>
             {% endif %}
         </div>
     </div>
+
+    <!-- No access message if no cards are shown -->
+    {% if not request.user.is_superuser %}
+    {% check_access "CreateItemCategory" as has_category_access %}
+    {% check_access "UsersModeratePage_view" as has_user_access %}
+    {% check_access "CreateItemTag" as has_tag_access %}
+    
+    {% if not has_category_access and not has_user_access and not has_tag_access %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>У вас нет доступа к инструментам модерации.</strong> Обратитесь к администратору для получения необходимых прав.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
 </div>
 
-<!-- Стилизация -->
+<!-- Enhanced Styling -->
 <style>
+    /* General styles */
+    .container {
+        max-width: 1280px;
+    }
+
+    /* Header divider */
+    .divider {
+        position: relative;
+        text-align: center;
+        margin: 15px 0 30px;
+    }
+
+    .divider span {
+        display: inline-block;
+        width: 50px;
+        height: 5px;
+        background-color: #007bff;
+        border-radius: 5px;
+    }
+
+    /* Card styling */
     .card {
         border-radius: 12px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: all 0.3s ease;
+        overflow: hidden;
     }
 
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1) !important;
     }
 
     .card-title {
         font-size: 1.25rem;
-        font-weight: bold;
     }
 
     .card-text {
         font-size: 0.95rem;
+        line-height: 1.5;
     }
 
+    /* Icon styles */
+    .icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    /* Button styling */
     .btn-primary {
         background-color: #007bff;
         border-color: #007bff;
+        padding: 0.6rem 1.5rem;
+        transition: all 0.2s ease;
     }
 
     .btn-primary:hover {
         background-color: #0056b3;
         border-color: #004085;
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Animation for cards */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+        animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .icon-wrapper {
+            width: 60px;
+            height: 60px;
+        }
     }
 </style>
 {% endblock main %}

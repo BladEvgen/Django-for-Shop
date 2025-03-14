@@ -1,40 +1,263 @@
-<footer class="mt-auto py-4 bg-white text-dark">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2">
-                        <a href="/" class="nav-link p-0 text-dark">
-                            <i class="fas fa-home me-2"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="#" class="nav-link p-0 text-dark">
-                            <i class="fas fa-question-circle me-2"></i> FAQs
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="/about" class="nav-link p-0 text-dark">
-                            <i class="fas fa-info-circle me-2"></i> About Us
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="col-md-4">
-                <p class="text-center">
-                    <a href="mailto:info@example.com" class="text-dark">
-                        <i class="fas fa-envelope me-2"></i> info@example.com
-                    </a>
-                </p>
-                <div class="social-icons text-center">
-                    <a href="#" class="text-dark me-2"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="text-dark me-2"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-dark"><i class="fab fa-instagram"></i></a>
+<footer class="footer">
+    <div class="footer-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <div class="footer-widget">
+                        <div class="footer-logo mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="150" height="45">
+                                <rect width="120" height="50" fill="black" />
+                                <rect x="120" width="80" height="50" fill="#ff7300" />
+                                <text x="60" y="32" font-family="sans-serif" font-size="25" fill="white" text-anchor="middle">Electro</text>
+                                <text x="160" y="32" font-family="sans-serif" font-size="25" fill="black" text-anchor="middle">Hub</text>
+                            </svg>
+                        </div>
+                        <p class="footer-description">Your trusted destination for electronics and electrical components. Quality products with expert support.</p>
+                        <div class="footer-social">
+                            <a href="#" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-icon" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-icon" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                    <div class="footer-widget">
+                        <h4 class="footer-widget-title">Quick Links</h4>
+                        <ul class="footer-links">
+                            <li><a href="/"><i class="fas fa-angle-right"></i> Home</a></li>
+                            <li><a href="/products"><i class="fas fa-angle-right"></i> Products</a></li>
+                            <li><a href="/categories"><i class="fas fa-angle-right"></i> Categories</a></li>
+                            <li><a href="/deals"><i class="fas fa-angle-right"></i> Special Deals</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                    <div class="footer-widget">
+                        <h4 class="footer-widget-title">Information</h4>
+                        <ul class="footer-links">
+                            <li><a href="/about"><i class="fas fa-angle-right"></i> About Us</a></li>
+                            <li><a href="/contact"><i class="fas fa-angle-right"></i> Contact Us</a></li>
+                            <li><a href="/faq"><i class="fas fa-angle-right"></i> FAQs</a></li>
+                            <li><a href="/privacy"><i class="fas fa-angle-right"></i> Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-widget">
+                        <h4 class="footer-widget-title">Contact Info</h4>
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>123 Electronics Ave, Circuit City, 10001</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone-alt"></i>
+                                <span><a href="tel:+1234567890">+1 (234) 567-890</a></span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span><a href="mailto:info@example.com">info@example.com</a></span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Mon-Fri: 9AM - 6PM</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4 text-center">
-                <p>© {{ current_year }} ElectroHub </p>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="copyright">© {{ current_year }} ElectroHub. All Rights Reserved.</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="payment-methods">
+                        <span>Payment Methods:</span>
+                        <i class="fab fa-cc-visa" aria-label="Visa"></i>
+                        <i class="fab fa-cc-mastercard" aria-label="Mastercard"></i>
+                        <i class="fab fa-cc-paypal" aria-label="PayPal"></i>
+                        <i class="fab fa-cc-apple-pay" aria-label="Apple Pay"></i>
+                    </div>
+                </div>
             </div>
-        </div> 
+        </div>
     </div>
 </footer>
+
+<style>
+    .footer {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-size: 0.95rem;
+    }
+    
+    .footer-top {
+        padding: 60px 0 30px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .footer-description {
+        margin-bottom: 20px;
+        line-height: 1.6;
+        color: #6c757d;
+    }
+    
+    .footer-widget {
+        margin-bottom: 30px;
+    }
+    
+    .footer-widget-title {
+        position: relative;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        color: #333;
+    }
+    
+    .footer-widget-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 40px;
+        height: 3px;
+        background: #E56717;
+    }
+    
+    .footer-social {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .social-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background-color: #fff;
+        color: #495057;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .social-icon:hover {
+        background-color: #E56717;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+    
+    .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .footer-links li {
+        margin-bottom: 12px;
+    }
+    
+    .footer-links a {
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+    
+    .footer-links a i {
+        font-size: 12px;
+        margin-right: 8px;
+        color: #E56717;
+        transition: transform 0.3s ease;
+    }
+    
+    .footer-links a:hover {
+        color: #E56717;
+        padding-left: 5px;
+    }
+    
+    .footer-links a:hover i {
+        transform: translateX(3px);
+    }
+    
+    .contact-info {
+        margin-top: 15px;
+    }
+    
+    .contact-item {
+        display: flex;
+        margin-bottom: 15px;
+        align-items: flex-start;
+    }
+    
+    .contact-item i {
+        width: 18px;
+        margin-right: 15px;
+        color: #E56717;
+    }
+    
+    .contact-item a {
+        color: #495057;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .contact-item a:hover {
+        color: #E56717;
+    }
+    
+    .footer-bottom {
+        padding: 20px 0;
+        background-color: #f1f1f1;
+    }
+    
+    .copyright {
+        margin-bottom: 0;
+    }
+    
+    .payment-methods {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    
+    .payment-methods span {
+        font-size: 0.85rem;
+        margin-right: 10px;
+    }
+    
+    .payment-methods i {
+        font-size: 1.5rem;
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+    
+    .payment-methods i:hover {
+        color: #333;
+    }
+    
+    @media (max-width: 768px) {
+        .payment-methods {
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .copyright {
+            text-align: center;
+        }
+    }
+</style>

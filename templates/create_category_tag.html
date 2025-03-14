@@ -5,31 +5,114 @@
 {% block title %}Создать тэг{% endblock title %}
 
 {% block main %}
-<div class="container mt-5">
-    <h2 class="text-center text-primary mb-4">🏷️ Создать тэг</h2>
-    
-    <div class="card shadow-sm border-0 p-4">
-        <form method="post" action="{% url 'create_tag_item' %}" class="needs-validation" novalidate>
-            {% csrf_token %}
-            <!-- Название -->
-            <div class="mb-3">
-                <label for="title" class="form-label">Название тэга:</label>
-                <input type="text" name="title" id="title" class="form-control" placeholder="Введите название тэга" required />
-                <div class="invalid-feedback">Пожалуйста, введите название тэга.</div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-10">
+            <!-- Header with breadcrumb -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h2 class="mb-0 text-primary fw-bold">
+                    <i class="fas fa-tag me-2"></i>Создать тэг
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Тэги</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Создать</li>
+                    </ol>
+                </nav>
             </div>
-            <!-- Слаг -->
-            <div class="mb-3">
-                <label for="slug" class="form-label">Ссылка (Slug):</label>
-                <input type="text" name="slug" id="slug" class="form-control" placeholder="Введите slug" required />
-                <small class="form-text text-muted">
-                    Слаг должен быть написан на английском языке, в нижнем регистре и разделён дефисами.
-                    <br>Пример: "creating-a-category-tag".
-                </small>
-                <div class="invalid-feedback">Пожалуйста, введите корректный slug.</div>
+
+            <!-- Card with form -->
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-header bg-light p-4 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-info-soft rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                            <i class="fas fa-hashtag text-info fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0 fw-bold">Информация о тэге</h5>
+                            <p class="text-muted mb-0 small">Заполните необходимые поля для создания нового тэга</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post" action="{% url 'create_tag_item' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Название -->
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-medium">Название тэга <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-hashtag text-muted"></i>
+                                </span>
+                                <input 
+                                    type="text" 
+                                    name="title" 
+                                    id="title" 
+                                    class="form-control border-start-0 ps-0" 
+                                    placeholder="Введите название тэга" 
+                                    required 
+                                    autofocus
+                                />
+                            </div>
+                            <div class="invalid-feedback">Пожалуйста, введите название тэга.</div>
+                        </div>
+                        
+                        <!-- Слаг -->
+                        <div class="mb-4">
+                            <label for="slug" class="form-label fw-medium">Ссылка (Slug) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-link text-muted"></i>
+                                </span>
+                                <input 
+                                    type="text" 
+                                    name="slug" 
+                                    id="slug" 
+                                    class="form-control border-start-0 ps-0" 
+                                    placeholder="Введите slug" 
+                                    required 
+                                />
+                            </div>
+                            <div class="form-text mt-2">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-info-circle text-info mt-1 me-2"></i>
+                                    <span>Слаг должен быть написан на английском языке, в нижнем регистре и разделён дефисами.<br>
+                                    Например: <code>creating-a-tag-item</code></span>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback">Пожалуйста, введите корректный slug.</div>
+                        </div>
+                        
+                        <!-- Кнопки управления -->
+                        <div class="d-flex gap-2 mt-4">
+                            <a href="#" class="btn btn-outline-secondary flex-grow-1">
+                                <i class="fas fa-times me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-info text-white flex-grow-1">
+                                <i class="fas fa-check me-2"></i>Создать тэг
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <!-- Кнопка отправки -->
-            <button type="submit" class="btn btn-primary w-100 mt-3">Создать тэг</button>
-        </form>
+            
+            <!-- Help box -->
+            <div class="card border-0 shadow-sm rounded-3 mt-4 bg-light">
+                <div class="card-body p-4">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-lightbulb text-warning fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-2">Подсказка</h5>
+                            <p class="mb-0">Тэги позволяют связывать контент по темам и упрощают поиск материалов. Используйте краткие, но информативные названия для лучшего поиска.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -48,5 +131,40 @@
             }, false);
         });
     })();
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('title').focus();
+    });
 </script>
+
+<style>
+    .bg-info-soft {
+        background-color: rgba(13, 202, 240, 0.15);
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.15);
+    }
+    
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07) !important;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+    
+    code {
+        background-color: rgba(13, 202, 240, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+</style>
 {% endblock main %}

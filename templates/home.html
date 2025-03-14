@@ -6,44 +6,214 @@
 
 {% block main %}
 <style>
+  /* Base Colors - Keep existing */
   .custom-color {
     background-color: #ff7300; 
     color: #ffffff; 
   }
 
+  /* Enhanced styling for main sections */
+  .main-container {
+    padding: 2rem 0;
+    background-color: #f9f9f9;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.7'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Improved carousel controls */
   .carousel-control-prev-icon,
   .carousel-control-next-icon {
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 50%;
-    padding: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .carousel-control-prev-icon:hover,
+  .carousel-control-next-icon:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+  }
+
+  /* Enhanced card styling */
+  .product-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    height: 100%;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
   }
 
   .card-header {
-    background-color: #f8f9fa;
-  }
-
-  .btn-outline-primary {
-    border-color: #ff7300;
-    color: #ff7300;
-  }
-
-  .btn-outline-primary:hover {
-    background-color: #ff7300;
-    color: #ffffff;
+    background-color: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.2rem 1rem;
   }
 
   .card img {
     height: 250px;
     object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .card .img-container {
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .card:hover img {
+    transform: scale(1.05);
+  }
+  
+  .price-tag {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
   }
 
+  /* Better buttons */
+  .btn-outline-primary {
+    border: 2px solid #ff7300;
+    color: #ff7300;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: #ff7300;
+    color: #ffffff;
+    box-shadow: 0 5px 15px rgba(255, 115, 0, 0.3);
+  }
+  
+  .btn-action {
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+  }
+  
+  .btn-search {
+    border-radius: 30px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-search:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Section titles */
+  .section-title {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-weight: 700;
+  }
+  
+  .section-title:after {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 4px;
+    background-color: #ff7300;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+  }
+  
+  .section-description {
+    max-width: 700px;
+    margin: 0 auto 3rem;
+    color: #6c757d;
+  }
+
+  /* About section enhancement */
+  .about-section {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.03);
+  }
+  
+  .about-card {
+    padding: 2rem;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+  
+  .about-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .lead {
+    line-height: 1.8;
+    font-size: 1.15rem;
+    color: #495057;
+  }
+
+  /* Image effects */
+  .img-shadow {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .img-container {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .discount-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #e74c3c;
+    color: white;
+    padding: 5px 10px;
+    z-index: 2;
+    font-weight: bold;
+    border-bottom-right-radius: 10px;
+  }
+
+  /* Responsive adjustments */
   @media (max-width: 576px) {
     .pricing-header {
       padding: 1rem;
     }
 
     .card {
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+    }
+    
+    .about-card {
+      padding: 1.5rem;
     }
   }
 
@@ -51,190 +221,241 @@
     width: 100%;
     height: auto;
     max-width: 250px; 
+    transition: transform 0.3s ease;
   }
   
+  .responsive-logo:hover {
+    transform: scale(1.05);
+  }
+  
+  .carousel-indicators button {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    margin: 0 5px !important;
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.3s ease;
+  }
+  
+  .carousel-indicators .active {
+    background-color: #ff7300 !important;
+    transform: scale(1.2);
+  }
+  
+  /* Divider styles */
+  .fancy-divider {
+    height: 5px;
+    background: linear-gradient(90deg, transparent, rgba(255, 115, 0, 0.5), transparent);
+    margin: 3rem 0;
+    border: none;
+  }
 </style>
 
+<div class="main-container">
+  <!-- VIP Products Header -->
+  <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+    <h1 class="display-4 fw-normal text-body-emphasis section-title">VIP-товары</h1>
+    <p class="fs-5 text-body-secondary section-description">Самые лучшие в категориях — эксклюзивные предложения для наших клиентов</p>
+  </div>
 
-<!-- Заголовок VIP-товаров -->
-<div class="pricing-header p-3 pb-md-4 mx-auto text-center">
-  <h1 class="display-4 fw-normal text-body-emphasis">VIP-товары</h1>
-  <p class="fs-5 text-body-secondary">Самые лучшие в категориях:</p>
-</div>
+  <!-- VIP Products Carousel (3 items per slide for large screens) -->
+  {% if vips|length > 3 %}
+    <div id="vipCarouselLarge" class="carousel slide d-none d-lg-block" data-bs-ride="carousel">
+      <!-- Indicators -->
+      <div class="carousel-indicators">
+        {% for chunk in vips|chunked:3 %}
+          <button type="button" data-bs-target="#vipCarouselLarge" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Слайд {{ forloop.counter }}"></button>
+        {% endfor %}
+      </div>
 
-<!-- Карусель VIP-товаров (3 товара на слайд для больших экранов) -->
-{% if vips|length > 3 %}
-  <div id="vipCarouselLarge" class="carousel slide d-none d-lg-block" data-bs-ride="carousel">
-    <!-- Индикаторы -->
-    <div class="carousel-indicators">
-      {% for chunk in vips|chunked:3 %}
-        <button type="button" data-bs-target="#vipCarouselLarge" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Слайд {{ forloop.counter }}"></button>
-      {% endfor %}
+      <!-- Carousel slides -->
+      <div class="carousel-inner">
+        {% for chunk in vips|chunked:3 %}
+          <div class="carousel-item {% if forloop.first %}active{% endif %} animate__animated animate__fadeIn">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-3 text-center justify-content-center">
+              {% for v in chunk %}
+                <div class="col">
+                  <div class="card mb-4 rounded-3 shadow-sm product-card animate__animated animate__pulse animate__slow">
+                    <div class="img-container">
+                      {% if v.article.discounted_price %}
+                        <div class="discount-badge">Скидка</div>
+                      {% endif %}
+                      <div class="price-tag">
+                        {% if v.article.discounted_price %}
+                          {% digit_beautify v.article.discounted_price as formatted_discounted_price %}
+                          {{ formatted_discounted_price }} ₸
+                        {% else %}
+                          {% digit_beautify v.article.price as formatted_price %}
+                          {{ formatted_price }} ₸
+                        {% endif %}
+                      </div>
+                      <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}">
+                    </div>
+                    <div class="card-header py-3">
+                      <h4 class="my-0 fw-normal animate__animated animate__fadeInDown">{{ v.article.title }}</h4>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-unstyled mt-3 mb-4 animate__animated animate__fadeInUp">
+                        <li>{{ v.article.description|custom_cut:50 }}</li>
+                      </ul>
+                      <a href="{% url 'product_detail' v.article.id %}" class="w-100 btn btn-lg btn-outline-primary animate__animated animate__bounceIn">
+                        <i class="fas fa-eye me-2"></i> Детали
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Carousel controls with animation -->
+      <button class="carousel-control-prev animate__animated animate__fadeInLeft" type="button" data-bs-target="#vipCarouselLarge" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Предыдущий</span>
+      </button>
+      <button class="carousel-control-next animate__animated animate__fadeInRight" type="button" data-bs-target="#vipCarouselLarge" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Следующий</span>
+      </button>
     </div>
 
-    <!-- Карусельные слайды -->
-    <div class="carousel-inner">
-      {% for chunk in vips|chunked:3 %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %} animate__animated animate__fadeIn">
-          <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-3 text-center justify-content-center">
-            {% for v in chunk %}
-              <div class="col">
-                <div class="card mb-4 rounded-3 shadow-sm animate__animated animate__pulse animate__slow">
-                  <div class="overflow-hidden">
+    <!-- VIP Products Carousel for mobile devices (1 item per slide) -->
+    <div id="vipCarouselSmall" class="carousel slide d-block d-lg-none" data-bs-ride="carousel">
+      <!-- Indicators -->
+      <div class="carousel-indicators">
+        {% for v in vips %}
+          <button type="button" data-bs-target="#vipCarouselSmall" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Слайд {{ forloop.counter }}"></button>
+        {% endfor %}
+      </div>
+
+      <!-- Carousel slides -->
+      <div class="carousel-inner">
+        {% for v in vips %}
+          <div class="carousel-item {% if forloop.first %}active{% endif %} animate__animated animate__zoomIn">
+            <div class="row">
+              <div class="col-12 text-center">
+                <div class="card mb-4 rounded-3 shadow-sm product-card">
+                  <div class="img-container">
+                    {% if v.article.discounted_price %}
+                      <div class="discount-badge">Скидка</div>
+                    {% endif %}
+                    <div class="price-tag">
+                      {% if v.article.discounted_price %}
+                        {% digit_beautify v.article.discounted_price as formatted_discounted_price %}
+                        {{ formatted_discounted_price }} ₸
+                      {% else %}
+                        {% digit_beautify v.article.price as formatted_price %}
+                        {{ formatted_price }} ₸
+                      {% endif %}
+                    </div>
                     <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}">
                   </div>
                   <div class="card-header py-3">
                     <h4 class="my-0 fw-normal animate__animated animate__fadeInDown">{{ v.article.title }}</h4>
                   </div>
                   <div class="card-body">
-                    <h1 class="card-title pricing-card-title animate__animated animate__zoomIn">
-                      {% if v.article.discounted_price %}
-                        {% digit_beautify v.article.discounted_price as formatted_discounted_price %}
-                        {{ formatted_discounted_price }} <small class="text-body-secondary fw-light">₸</small>
-                      {% else %}
-                        {% digit_beautify v.article.price as formatted_price %}
-                        {{ formatted_price }} <small class="text-body-secondary fw-light">₸</small>
-                      {% endif %}
-                    </h1>
                     <ul class="list-unstyled mt-3 mb-4 animate__animated animate__fadeInUp">
                       <li>{{ v.article.description|custom_cut:50 }}</li>
                     </ul>
-                    <a href="{% url 'product_detail' v.article.id %}" class="w-100 btn btn-lg btn-outline-primary animate__animated animate__bounceIn">Детали</a>
+                    <a href="{% url 'product_detail' v.article.id %}" class="w-100 btn btn-lg btn-outline-primary animate__animated animate__flipInX">
+                      <i class="fas fa-eye me-2"></i> Детали
+                    </a>
                   </div>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-
-    <!-- Контролы карусели с анимацией -->
-    <button class="carousel-control-prev animate__animated animate__fadeInLeft" type="button" data-bs-target="#vipCarouselLarge" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Предыдущий</span>
-    </button>
-    <button class="carousel-control-next animate__animated animate__fadeInRight" type="button" data-bs-target="#vipCarouselLarge" data-bs-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Следующий</span>
-    </button>
-  </div>
-
-  <!-- Карусель VIP-товаров для мобильных устройств (1 товар на слайд) -->
-  <div id="vipCarouselSmall" class="carousel slide d-block d-lg-none" data-bs-ride="carousel">
-    <!-- Индикаторы -->
-    <div class="carousel-indicators">
-      {% for v in vips %}
-        <button type="button" data-bs-target="#vipCarouselSmall" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Слайд {{ forloop.counter }}"></button>
-      {% endfor %}
-    </div>
-
-    <!-- Карусельные слайды -->
-    <div class="carousel-inner">
-      {% for v in vips %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %} animate__animated animate__zoomIn">
-          <div class="row">
-            <div class="col-12 text-center">
-              <div class="card mb-4 rounded-3 shadow-sm">
-                <div>
-                  <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}">
-                </div>
-                <div class="card-header py-3">
-                  <h4 class="my-0 fw-normal animate__animated animate__fadeInDown">{{ v.article.title }}</h4>
-                </div>
-                <div class="card-body">
-                  <h1 class="card-title pricing-card-title animate__animated animate__lightSpeedInLeft">
-                    {% if v.article.discounted_price %}
-                      {% digit_beautify v.article.discounted_price as formatted_discounted_price %}
-                      {{ formatted_discounted_price }} <small class="text-body-secondary fw-light">₸</small>
-                    {% else %}
-                      {% digit_beautify v.article.price as formatted_price %}
-                      {{ formatted_price }} <small class="text-body-secondary fw-light">₸</small>
-                    {% endif %}
-                  </h1>
-                  <ul class="list-unstyled mt-3 mb-4 animate__animated animate__fadeInUp">
-                    <li>{{ v.article.description|custom_cut:50 }}</li>
-                  </ul>
-                  <a href="{% url 'product_detail' v.article.id %}" class="w-100 btn btn-lg btn-outline-primary animate__animated animate__flipInX">Детали</a>
                 </div>
               </div>
             </div>
           </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Carousel controls -->
+      <button class="carousel-control-prev" type="button" data-bs-target="#vipCarouselSmall" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Предыдущий</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#vipCarouselSmall" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Следующий</span>
+      </button>
+    </div>
+  {% else %}
+    <!-- Display products without carousel -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-3 text-center justify-content-center">
+      {% for v in vips %}
+        <div class="col">
+          <div class="card mb-4 rounded-3 shadow-sm product-card">
+            <div class="img-container">
+              {% if v.article.discounted_price %}
+                <div class="discount-badge">Скидка</div>
+              {% endif %}
+              <div class="price-tag">
+                {% if v.article.discounted_price %}
+                  {% digit_beautify v.article.discounted_price as formatted_discounted_price %}
+                  {{ formatted_discounted_price }} ₸
+                {% else %}
+                  {% digit_beautify v.article.price as formatted_price %}
+                  {{ formatted_price }} ₸
+                {% endif %}
+              </div>
+              <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}">
+            </div>
+            <div class="card-header py-3">
+              <h4 class="my-0 fw-normal">{{ v.article.title }}</h4>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled mt-3 mb-4">
+                <li>{{ v.article.description|custom_cut:50 }}</li>
+              </ul>
+              <a href="{% url 'product_detail' v.article.id %}" class="w-100 btn btn-lg btn-outline-primary">
+                <i class="fas fa-eye me-2"></i> Детали
+              </a>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col">
+          <div class="card p-5 shadow-sm">
+            <h2 class="mb-4">Будьте первыми в VIP</h2>
+            <p class="text-muted">Станьте первым, кто разместит свой товар в VIP-секции и получите максимальное внимание покупателей!</p>
+          </div>
         </div>
       {% endfor %}
     </div>
-     <!-- Контролы карусели -->
-    <button class="carousel-control-prev" type="button" data-bs-target="#vipCarouselSmall" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Предыдущий</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#vipCarouselSmall" data-bs-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Следующий</span>
-    </button>
-  </div>
-{% else %}
-  <!-- Отображение товаров без карусели -->
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-3 text-center justify-content-center">
-    {% for v in vips %}
-      <div class="col">
-        <div class="card mb-4 rounded-3 shadow-sm">
-          <div>
-            <img class="img-fluid" src="{{ v.article.get_image_url }}" alt="{{ v.name }}">
-          </div>
-          <div class="card-header py-3">
-            <h4 class="my-0 fw-normal">{{ v.article.title }}</h4>
-          </div>
-          <div class="card-body">
-            <h1 class="card-title pricing-card-title">
-              {% if v.article.discounted_price %}
-                {% digit_beautify v.article.discounted_price as formatted_discounted_price %}
-                {{ formatted_discounted_price }}
-                <small class="text-body-secondary fw-light">₸</small>
-              {% else %}
-                {% digit_beautify v.article.price as formatted_price %}
-                {{ formatted_price }}
-                <small class="text-body-secondary fw-light">₸</small>
-              {% endif %}
-            </h1>
-            <ul class="list-unstyled mt-3 mb-4">
-              <li>{{ v.article.description|custom_cut:50 }}</li>
-            </ul>
-            <a href="{% url 'product_detail' v.article.id %}" type="button" class="w-100 btn btn-lg btn-outline-primary">Детали</a>
+  {% endif %}
+
+  <hr class="fancy-divider" />
+
+  <div class="container col-xxl-8 px-4 py-5 about-section">
+    <div class="row flex-lg-row-reverse align-items-center g-5 py-3">
+      <div class="col-12 col-sm-8 col-lg-6">
+        <div class="about-card">
+          <div class="card-body d-flex flex-column align-items-center">
+            <div class="icon-container mb-3">
+              <i class="fas fa-search fa-3x text-primary"></i>
+            </div>
+            <h5 class="card-title text-center mb-3">Найдите то, что вам нужно!</h5>
+            <p class="card-text text-center mb-4">Воспользуйтесь нашим удобным поиском, чтобы быстро найти нужный товар среди тысяч наименований.</p>
+            <a href="#search-form" class="btn btn-outline-primary btn-search border-2 w-75" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+              <i class="fas fa-search me-2"></i> Перейти к поиску
+            </a>
           </div>
         </div>
       </div>
-    {% empty %}
-      <div class="col">
-        <h2>Будьте первыми в VIP</h2>
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
-
-
-<hr />
-
-<div class="container col-xxl-8 px-4 py-5">
-  <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
-    <div class="col-12 col-sm-8 col-lg-6">
-      <div class="card mb-4">
-        <div class="card-body d-flex flex-column align-items-center">
-          <h5 class="card-title text-center">Найдите то, что вам нужно!</h5>
-          <p class="card-text text-center">Воспользуйтесь нашим удобным поиском, чтобы найти нужный товар.</p>
-          <a href="#search-form" class="btn btn-outline-primary border-2 rounded-pill px-4 py-2 w-75" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
-            <i class="fas fa-search me-2"></i> Перейти к поиску
-          </a>
+      <div class="col-lg-6">
+        <div class="logo-container mb-4 text-center text-lg-start">
+          {% include "components/logo.html" %}
         </div>
+        <h2 class="fw-bold text-body-emphasis mb-4">О нас</h2>
+        <p class="lead">
+          Приветствуем вас в ElectroHub! Мы - команда энтузиастов, которые обожают электронику и гаджеты так же, как и вы.  
+        </p>
+        <p class="lead">
+          У нас вы найдете не просто широкий ассортимент, а тщательно отобранные товары, которые сделают вашу жизнь проще, комфортнее и интереснее. 
+          Мы всегда рады помочь с выбором и ответить на ваши вопросы. 
+        </p>
       </div>
-    </div>
-    <div class="col-lg-6 display-5 fw-bold text-body-emphasis lh-1 mb-3">
-      {% include "components/logo.html" %}
-      <p class="lead">
-        Приветствуем вас в ElectroHub! Мы - команда энтузиастов, которые обожают электронику и гаджеты так же, как и вы.  
-        У нас вы найдете не просто широкий ассортимент, а тщательно отобранные товары, которые сделают вашу жизнь проще, комфортнее и интереснее. 
-        Мы всегда рады помочь с выбором и ответить на ваши вопросы. 
-      </p>
     </div>
   </div>
 </div>
@@ -244,7 +465,7 @@
     var vipCarouselLargeElement = document.getElementById('vipCarouselLarge');
     if (vipCarouselLargeElement) {
       var vipCarouselLarge = new bootstrap.Carousel(vipCarouselLargeElement, {
-        interval: 3500, 
+        interval: 5000, 
         ride: 'carousel',
         wrap: true,
         pause: 'hover'
@@ -254,24 +475,35 @@
     var vipCarouselSmallElement = document.getElementById('vipCarouselSmall');
     if (vipCarouselSmallElement) {
       var vipCarouselSmall = new bootstrap.Carousel(vipCarouselSmallElement, {
-        interval: 3500, 
+        interval: 5000, 
         ride: 'carousel',
         wrap: true,
         pause: 'hover'
       });
     }
-  });
-  document.querySelectorAll('a[href^="#search-form"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
-    e.preventDefault();
-
-    document.querySelector(this.getAttribute('href')).scrollIntoView({
-      behavior: 'smooth'
+    
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.classList.add('shadow-lg');
+      });
+      card.addEventListener('mouseleave', function() {
+        this.classList.remove('shadow-lg');
+      });
     });
-    setTimeout(() => {
-      document.querySelector('#search-form input[type="search"]').focus();
-    }, 500);
   });
-});
+  
+  document.querySelectorAll('a[href^="#search-form"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      document.querySelector(this.getAttribute('href')).scrollIntoView({
+        behavior: 'smooth'
+      });
+      setTimeout(() => {
+        document.querySelector('#search-form input[type="search"]').focus();
+      }, 500);
+    });
+  });
 </script>
 {% endblock main %}
