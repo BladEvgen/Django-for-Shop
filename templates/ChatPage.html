@@ -5,73 +5,413 @@
 {% block title %}Чат-комнаты{% endblock title %}
 
 {% block main %}
-<div class="container mt-5">
-    <!-- Заголовок -->
-    <h1 class="display-4 text-center text-primary">
-        Чат-комнаты {{ current_user.username|title }}
-    </h1>
-
-    <!-- Кнопка сортировки -->
-    <div class="d-flex justify-content-end my-3">
-        {% if sort == "desc" %}
-        <a class="btn btn-outline-secondary" href="{% url 'chat' %}?sort=asc" id="sort-asc">
-            <i class="fas fa-sort-amount-up-alt"></i> Сортировать по возрастанию
-        </a>
-        {% elif sort == "asc" %}
-        <a class="btn btn-outline-secondary" href="{% url 'chat' %}?sort=desc" id="sort-desc">
-            <i class="fas fa-sort-amount-down-alt"></i> Сортировать по убыванию
-        </a>
-        {% endif %}
+<div class="chat-container">
+    <!-- Header Section -->
+    <div class="chat-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="chat-title">
+                        <i class="fas fa-comments chat-icon"></i>
+                        Ваши чат-комнаты
+                    </h1>
+                    <p class="chat-subtitle">Общайтесь с продавцами и покупателями</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <!-- Sort Button -->
+                    <div class="sort-control">
+                        {% if sort == "desc" %}
+                        <a class="btn btn-light" href="{% url 'chat' %}?sort=asc" id="sort-asc">
+                            <i class="fas fa-sort-amount-up-alt me-2"></i> По возрастанию
+                        </a>
+                        {% elif sort == "asc" %}
+                        <a class="btn btn-light" href="{% url 'chat' %}?sort=desc" id="sort-desc">
+                            <i class="fas fa-sort-amount-down-alt me-2"></i> По убыванию
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Список чат-комнат -->
-    <div class="row mt-4" id="room_data">
-        {% if current_user.is_authenticated %}
-        {% for room_data in room_data %}
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-            <div class="card h-100 shadow-sm border-0 rounded overflow-hidden">
-                <div class="card-body">
-                    <h5 class="card-title text-primary mb-3">
-                        Название предмета: {{ room_data.room.item.title }}
-                    </h5>
-                    <p class="card-text text-muted">
-                        <i class="fas fa-user-circle"></i> Общение с {{ room_data.opponent_username|title }}
-                    </p>
+    <!-- Main Content -->
+    <div class="container py-5">
+        <!-- Chat Rooms Grid -->
+        <div class="row" id="room_data">
+            {% if current_user.is_authenticated %}
+                {% for room_data in room_data %}
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                    <div class="chat-card">
+                        <div class="chat-card-header">
+                            <div class="opponent-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="opponent-info">
+                                <h5 class="opponent-name">{{ room_data.opponent_username|title }}</h5>
+                                <span class="chat-date">
+                                    <i class="far fa-clock me-1"></i>{% formatted_time room_data.room.created_at %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="chat-card-body">
+                            <h4 class="item-title">{{ room_data.room.item.title }}</h4>
+                            <div class="item-preview">
+                                {% if room_data.room.item.image %}
+                                <img src="{% item_image_url room_data.room.item %}" alt="{{ room_data.room.item.title }}" class="item-image">
+                                {% else %}
+                                <div class="item-placeholder">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if room_data.last_message %}
+                            <div class="last-message">
+                                <div class="message-preview">
+                                    <span class="message-author">{{ room_data.last_message.author.username|title }}:</span>
+                                    {{ room_data.last_message.content|custom_cut:40 }}
+                                </div>
+                                <span class="message-time">{{ room_data.last_message.created_at|date:"H:i" }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="chat-card-footer">
+                            <a href="{% url 'room' room_data.room.slug room_data.room.token %}" class="btn-join-chat">
+                                <i class="fas fa-comment-dots me-2"></i>Открыть чат
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-footer bg-light d-flex justify-content-between align-items-center">
-                    <small class="text-muted">
-                        <i class="fas fa-clock"></i> Создано: {% formatted_time room_data.room.created_at %}
-                    </small>
-                    <a href="{% url 'room' room_data.room.slug room_data.room.token %}" class="btn btn-primary btn-sm">
-                        Присоединиться
-                    </a>
+                {% empty %}
+                <div class="col-12">
+                    <div class="empty-chats">
+                        <div class="empty-icon">
+                            <i class="far fa-comment-dots"></i>
+                        </div>
+                        <h3>У вас пока нет чатов</h3>
+                        <p>Начните общение с продавцом или покупателем прямо сейчас</p>
+                        <a href="{% url 'home' %}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>На главную страницу
+                        </a>
+                    </div>
                 </div>
-            </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="empty-chats">
+                        <div class="empty-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3>Требуется авторизация</h3>
+                        <p>Войдите в аккаунт, чтобы получить доступ к чатам</p>
+                        <a href="{% url 'login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Войти
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
-        {% empty %}
-        <div class="col-md-12">
-            <div class="alert alert-info text-center" role="alert">
-                У вас еще не создано чатов!
-            </div>
-        </div>
-        {% endfor %}
-        {% endif %}
     </div>
 </div>
 
 <style>
-    .card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* Main Container */
+    .chat-container {
+        background-color: #f8f9fa;
+        min-height: 100vh;
     }
-
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-outline-secondary:hover {
-        background-color: #6c757d;
+    
+    /* Header Styling */
+    .chat-header {
+        background: linear-gradient(135deg, #ff7300, #ff9d45);
+        padding: 40px 0;
         color: white;
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .chat-header::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: linear-gradient(135deg, #ff7300, #ff9d45);
+        transform: skewY(-1.5deg);
+        z-index: 1;
+    }
+    
+    .chat-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .chat-icon {
+        margin-right: 15px;
+        font-size: 2rem;
+        vertical-align: middle;
+    }
+    
+    .chat-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.8;
+        margin-bottom: 0;
+    }
+    
+    /* Sort Controls */
+    .sort-control {
+        position: relative;
+        z-index: 10;
+    }
+    
+    .sort-control .btn {
+        padding: 10px 20px;
+        border-radius: 50px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .sort-control .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Chat Cards */
+    .chat-card {
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+    
+    .chat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(to bottom, #ff7300, #ff9d45);
+    }
+    
+    /* Card Header */
+    .chat-card-header {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .opponent-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .opponent-info {
+        flex: 1;
+    }
+    
+    .opponent-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #2c3e50;
+    }
+    
+    .chat-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    /* Card Body */
+    .chat-card-body {
+        padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .item-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+    
+    .item-preview {
+        margin-bottom: 15px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+    }
+    
+    .item-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .item-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        font-size: 2rem;
+    }
+    
+    .last-message {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: auto;
+        position: relative;
+    }
+    
+    .message-preview {
+        font-size: 0.9rem;
+        color: #6c757d;
+        line-height: 1.4;
+    }
+    
+    .message-author {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .message-time {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        font-size: 0.8rem;
+        color: #adb5bd;
+    }
+    
+    .no-messages {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: auto;
+        text-align: center;
+        color: #adb5bd;
+    }
+    
+    /* Card Footer */
+    .chat-card-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .btn-join-chat {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(to right, #ff7300, #ff9d45);
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-join-chat:hover {
+        background: linear-gradient(to right, #e66800, #ff8b1f);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 115, 0, 0.2);
+    }
+    
+    /* Empty State */
+    .empty-chats {
+        text-align: center;
+        padding: 60px 20px;
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: #ff9d45;
+        margin-bottom: 20px;
+    }
+    
+    .empty-chats h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+    
+    .empty-chats p {
+        color: #6c757d;
+        margin-bottom: 25px;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .empty-chats .btn {
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 500;
+        background: linear-gradient(to right, #ff7300, #ff9d45);
+        border: none;
+    }
+    
+    .empty-chats .btn:hover {
+        background: linear-gradient(to right, #e66800, #ff8b1f);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 115, 0, 0.2);
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 767.98px) {
+        .chat-header {
+            padding: 30px 0;
+            text-align: center;
+        }
+        
+        .chat-title {
+            font-size: 1.8rem;
+        }
+        
+        .sort-control {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .chat-subtitle {
+            font-size: 1rem;
+        }
     }
 </style>
 {% endblock main %}
