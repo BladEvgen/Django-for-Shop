@@ -2,133 +2,470 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Уведомление о статусе заказа на EHub</title>
     <style>
+        /* Base Styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+            background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
             margin: 0;
             padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .container {
+        
+        /* Main Container */
+        .email-container {
             max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Header Styles */
+        .email-header {
+            background-color: #ff7300;
+            padding: 30px 0;
             text-align: center;
         }
-        .header {
-            padding: 10px 0;
-            border-bottom: 3px solid #ff7300;
+        
+        .email-header img {
+            max-width: 180px;
+            height: auto;
         }
-        .header img {
-            max-width: 150px;
+        
+        /* Status Banner */
+        .status-banner {
+            padding: 20px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
         }
-        .content {
-            text-align: left;
-            padding: 20px 0;
+        
+        .status-banner.processing {
+            background-color: #3498db;
         }
-        h2 {
-            color: #ff7300;
+        
+        .status-banner.confirmed {
+            background-color: #2ecc71;
         }
-        table {
+        
+        .status-banner.canceled {
+            background-color: #e74c3c;
+        }
+        
+        .status-banner.completed {
+            background-color: #27ae60;
+        }
+        
+        .status-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        /* Content Styles */
+        .email-content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            font-size: 16px;
+            color: #34495e;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+        
+        /* Order Info Section */
+        .order-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .order-info-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .info-item {
+            margin-bottom: 5px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+        }
+        
+        /* Delivery Info */
+        .delivery-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        /* Order Items Table */
+        .order-items {
+            margin-top: 30px;
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
+        
+        .order-items th {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
             text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
         }
-        th {
-            background-color: #ff7300;
-            color: white;
+        
+        .order-items td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            color: #34495e;
         }
-        .total {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 20px;
+        
+        .order-items tr:last-child td {
+            border-bottom: none;
         }
-        .btn {
+        
+        .product-name {
+            font-weight: 500;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        /* Total Row */
+        .total-row {
+            background-color: #f8f9fa;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        /* CTA Button */
+        .cta-container {
+            text-align: center;
+            margin: 35px 0;
+        }
+        
+        .cta-button {
             display: inline-block;
             background-color: #ff7300;
             color: white;
             text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-top: 20px;
+            padding: 15px 30px;
+            border-radius: 50px;
             font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: background-color 0.3s;
         }
-        .btn:hover {
-            background-color: #d95300;
+        
+        .cta-button:hover {
+            background-color: #e66800;
         }
-        .footer {
+        
+        /* Footer Styles */
+        .email-footer {
+            text-align: center;
+            padding: 30px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .contact-info {
+            margin-bottom: 15px;
+        }
+        
+        .contact-info a {
+            color: #ff7300;
+            text-decoration: none;
+        }
+        
+        .social-links {
+            margin: 20px 0;
+        }
+        
+        .social-link {
+            display: inline-block;
+            margin: 0 10px;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 20px;
+        }
+        
+        .copyright {
             margin-top: 20px;
             font-size: 12px;
-            color: #777;
+        }
+        
+        /* Status-Specific Styles */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: white;
+        }
+        
+        .status-badge.processing {
+            background-color: #3498db;
+        }
+        
+        .status-badge.confirmed {
+            background-color: #2ecc71;
+        }
+        
+        .status-badge.canceled {
+            background-color: #e74c3c;
+        }
+        
+        .status-badge.completed {
+            background-color: #27ae60;
+        }
+        
+        /* Helper Classes */
+        .mt-0 { margin-top: 0; }
+        .mb-0 { margin-bottom: 0; }
+        .mt-10 { margin-top: 10px; }
+        .mb-10 { margin-bottom: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        
+        /* Responsive Design */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                border-radius: 0;
+            }
+            
+            .email-content {
+                padding: 25px 15px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-items th,
+            .order-items td {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            
+            .cta-button {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-        {% include "components/logo.html" %}
+    <div class="email-container">
+        <!-- Header with Logo -->
+        <div class="email-header">
+            {% include "components/logo.html" %}
         </div>
-        <div class="content">
-            <h2>Здравствуйте, {{ order.user.get_full_name }}!</h2>
+        
+        <!-- Status Banner -->
+        <div class="status-banner {{ order.status|lower }}">
+            <!-- Status Icon -->
+            <div class="status-icon">
+                {% if order.status == "Processing" %}
+                    ⚙️
+                {% elif order.status == "Confirmed" %}
+                    ✅
+                {% elif order.status == "Canceled" %}
+                    ❌
+                {% elif order.status == "Completed" %}
+                    🎉
+                {% endif %}
+            </div>
             
+            <!-- Status Message -->
             {% if order.status == "Processing" %}
-                <p>Спасибо за ваш заказ на <strong>EHub</strong>! Мы приступили к его обработке и скоро отправим его вам.</p>
+                <h2 class="mt-0 mb-0">Ваш заказ в обработке</h2>
             {% elif order.status == "Confirmed" %}
-                <p>Отличная новость! Ваш заказ подтверждён и уже готовится к отправке.</p>
+                <h2 class="mt-0 mb-0">Заказ подтвержден</h2>
             {% elif order.status == "Canceled" %}
-                <p>К сожалению, ваш заказ был отменён. Если у вас возникли вопросы, пожалуйста, свяжитесь с нашей поддержкой.</p>
+                <h2 class="mt-0 mb-0">Заказ отменен</h2>
             {% elif order.status == "Completed" %}
-                <p>Ваш заказ успешно доставлен! Спасибо, что выбрали EHub.</p>
+                <h2 class="mt-0 mb-0">Заказ успешно доставлен</h2>
             {% endif %}
+        </div>
+        
+        <!-- Main Content -->
+        <div class="email-content">
+            <!-- Greeting -->
+            <div class="greeting">
+                Здравствуйте, {{ order.user.get_full_name }}!
+            </div>
             
-            <p><strong>Номер заказа:</strong> {{ order.id }}</p>
-            <p><strong>Дата заказа:</strong> {{ order.date_created|date:"d F Y, H:i" }}</p>
-            <p><strong>Текущий статус:</strong> {{ order.status }}</p>
-
-            <h3>Детали доставки:</h3>
-            <p><strong>Имя:</strong> {{ order.user.first_name }} {{ order.user.last_name }}</p>
-            <p><strong>Телефон:</strong> {{ order.user.profile.phonenumber }}</p>
-            <p><strong>Адрес:</strong> {{ order.user.profile.address }}</p>
-
-            <h3>Состав заказа:</h3>
-            <table>
+            <!-- Main Message -->
+            <div class="message">
+                {% if order.status == "Processing" %}
+                    <p>Благодарим вас за ваш заказ на <strong>EHub</strong>! Мы уже приступили к его обработке.</p>
+                    <p>Наша команда работает над тем, чтобы собрать все товары из вашего заказа. Мы сообщим вам, когда заказ будет готов к отправке.</p>
+                {% elif order.status == "Confirmed" %}
+                    <p>Отличная новость! Ваш заказ подтверждён и уже готовится к отправке.</p>
+                    <p>Все товары собраны и упакованы. В ближайшее время заказ будет передан курьерской службе для доставки по указанному адресу.</p>
+                {% elif order.status == "Canceled" %}
+                    <p>К сожалению, ваш заказ был отменён. Если вы не запрашивали отмену, пожалуйста, свяжитесь с нашей службой поддержки для выяснения деталей.</p>
+                    <p>Если вы оплатили заказ, средства будут возвращены на ваш счет в течение 3-5 рабочих дней.</p>
+                {% elif order.status == "Completed" %}
+                    <p>Ваш заказ успешно доставлен! Спасибо, что выбрали <strong>EHub</strong>.</p>
+                    <p>Надеемся, что вам понравятся приобретенные товары. Будем рады видеть вас снова!</p>
+                {% endif %}
+            </div>
+            
+            <!-- Order Info Section -->
+            <div class="order-info">
+                <h3 class="order-info-title">Информация о заказе</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Номер заказа</span>
+                        <span class="info-value">#{{ order.id }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Дата заказа</span>
+                        <span class="info-value">{{ order.date_created|date:"d F Y, H:i" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Статус</span>
+                        <span class="status-badge {{ order.status|lower }}">{{ order.status }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Способ оплаты</span>
+                        <span class="info-value">Наличными при получении</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Delivery Info Section -->
+            <div class="delivery-info">
+                <h3 class="order-info-title">Информация о доставке</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Получатель</span>
+                        <span class="info-value">{{ order.user.first_name }} {{ order.user.last_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Телефон</span>
+                        <span class="info-value">{{ order.user.profile.phonenumber }}</span>
+                    </div>
+                    <div class="info-item" style="grid-column: span 2;">
+                        <span class="info-label">Адрес доставки</span>
+                        <span class="info-value">{{ order.user.profile.address }}</span>
+                    </div>
+                    {% if order.status == "Confirmed" %}
+                    <div class="info-item" style="grid-column: span 2;">
+                        <span class="info-label">Ожидаемая доставка</span>
+                        <span class="info-value">В течение 3-5 рабочих дней</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Order Items Table -->
+            <h3 class="order-info-title">Состав заказа</h3>
+            <table class="order-items">
                 <thead>
                     <tr>
-                        <th>Товар</th>
-                        <th>Кол-во</th>
-                        <th>Цена</th>
-                        <th>Итого</th>
+                        <th style="width: 50%;">Товар</th>
+                        <th class="text-center">Кол-во</th>
+                        <th class="text-right">Цена</th>
+                        <th class="text-right">Итого</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for order_item in order.order_items.all %}
                     <tr>
-                        <td>{{ order_item.item.title }}</td>
-                        <td>{{ order_item.quantity }} шт</td>
-                        <td>{{ order_item.item.discounted_price|default:order_item.item.price }} ₸</td>
-                        <td>{{ order_item.calculate_item_total }} ₸</td>
+                        <td class="product-name">{{ order_item.item.title }}</td>
+                        <td class="text-center">{{ order_item.quantity }} шт</td>
+                        <td class="text-right">{{ order_item.item.discounted_price|default:order_item.item.price }} ₸</td>
+                        <td class="text-right">{{ order_item.calculate_item_total }} ₸</td>
                     </tr>
                     {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="3" class="text-right">Общая сумма:</td>
+                        <td class="text-right">{{ order.get_total_price }} ₸</td>
+                    </tr>
                 </tbody>
             </table>
-            <p class="total">Общая сумма: {{ order.get_total_price }} ₸</p>
-
-            <a href="{{ request.scheme }}://{{ request.get_host }}{% url 'order_detail_user' order.id %}" class="btn">Отследить заказ</a>
+            
+            <!-- CTA Button -->
+            <div class="cta-container">
+                <a href="{{ request.scheme }}://{{ request.get_host }}{% url 'order_detail_user' order.id %}" class="cta-button">
+                    Отследить заказ
+                </a>
+            </div>
+            
+            {% if order.status == "Completed" %}
+            <div style="text-align: center; margin: 30px 0;">
+                <p>Понравились товары? Оставьте отзыв на нашем сайте!</p>
+            </div>
+            {% endif %}
         </div>
-        <div class="footer">
-            <p>Если у вас есть вопросы, свяжитесь с нами: <a href="mailto:support@yourwebsite.com">support@yourwebsite.com</a></p>
-            <p>© {{ current_year }} EHub. Все права защищены.</p>
+        
+        <!-- Footer -->
+        <div class="email-footer">
+            <div class="contact-info">
+                <p>Есть вопросы? Свяжитесь с нами:</p>
+                <p><a href="mailto:support@ehub.kz">support@ehub.kz</a> | <a href="tel:+77777777777">+7 (777) 777-77-77</a></p>
+            </div>
+            
+            <div class="social-links">
+                <a href="#" class="social-link">Facebook</a> |
+                <a href="#" class="social-link">Instagram</a> |
+                <a href="#" class="social-link">Telegram</a>
+            </div>
+            
+            <div class="copyright">
+                <p>© {{ current_year }} EHub. Все права защищены.</p>
+                <p>Адрес: Казахстан, г. Алматы, ул. Примерная, 123</p>
+            </div>
         </div>
     </div>
 </body>
