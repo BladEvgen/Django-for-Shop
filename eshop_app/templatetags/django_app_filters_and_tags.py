@@ -1,10 +1,12 @@
+import datetime
+
 # django_app_filters_and_tags.py
 from django import template
 from eshop_app import models
 from django.utils import formats
 from django.utils import timezone
 from django.utils.translation import get_language
-import datetime
+
 register = template.Library()
 
 
@@ -124,7 +126,6 @@ def check_access(context: dict, action_slug: str = "") -> bool:
     return is_access
 
 
-
 @register.filter(name="has_action")
 def has_action(user_profile, action_slug):
     return user_profile.has_action(action_slug)
@@ -137,3 +138,8 @@ def chunked(value, chunk_size):
     except ValueError:
         return value
     return [value[i : i + chunk_size] for i in range(0, len(value), chunk_size)]
+
+
+@register.filter
+def multiply(value, arg):
+    return value * arg
