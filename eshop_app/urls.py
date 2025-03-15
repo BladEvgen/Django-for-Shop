@@ -29,15 +29,13 @@ urlpatterns = [
     path("create_item/", views.create_item, name="create_item"),
     path("search/", views.search, name="search"),
     path("add_review/<int:product_id>/", views.add_review, name="add_review"),
-    path(
-        "product_detail/<int:product_id>/", views.product_detail, name="product_detail"
-    ),
+    path("product_detail/<int:product_id>/", views.product_detail, name="product_detail"),
     path(
         "create_category_item/",
         views.CreateCategoryItemView.as_view(),
         name="create_category_item",
     ),
-        path(
+    path(
         "create_category_tag/",
         views.CreateTagItemView.as_view(),
         name="create_tag_item",
@@ -52,10 +50,11 @@ urlpatterns = [
     path("chat/", views.chat, name="chat"),
     path("chat/<slug:room_slug>/<str:token>/", views.room, name="room"),
     path("create_chat_room/", views.create_chat_room, name="create_chat_room"),
+    # * CHAT API
+    path('api/chat/<slug:room_slug>/history/', views.chat_history_api, name='chat_history_api'),
     # * MODERATE
     path("moderate/users/", views.ModerateUsersView.as_view(), name="moderate_users"),
     path('moderate/search-users/', views.SearchUsersView.as_view(), name='search_users'),
-
     path(
         "moderate/ban/<int:user_id>/",
         views.BanUsersView.as_view(),
@@ -98,9 +97,7 @@ urlpatterns = [
     path("checkout/", views.checkout, name="checkout"),
     path("order_list/", views.order_list, name="order_list"),
     path("order_detail/<int:order_id>/", views.order_detail, name="order_detail"),
-    path(
-        "order-detail-user/<int:order_id>/", views.order_detail_user, name="order_detail_user"
-    ),
+    path("order-detail-user/<int:order_id>/", views.order_detail_user, name="order_detail_user"),
     path(
         "update_order_status/<int:order_id>/",
         views.update_order_status,
@@ -112,6 +109,4 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-websocket_urlpatterns = [
-    path("ws/chat/<slug:room_name>/", views_a.ChatConsumer.as_asgi())
-]
+websocket_urlpatterns = [path("ws/chat/<slug:room_name>/", views_a.ChatConsumer.as_asgi())]
