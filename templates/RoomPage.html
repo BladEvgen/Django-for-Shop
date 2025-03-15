@@ -1,82 +1,374 @@
 {% extends "components/base.html" %}
 {% load static %}
 {% load django_app_filters_and_tags %}
+
 {% block title %}Chat with                 
 {% if request.user == room.user_started %}
 {{ room.user_opponent.username|title }}
 {% else %}
 {{ room.user_started.username|title }}
 {% endif %} {% endblock title %}
+
 {% block main %}
 <script src="https://cdn.tailwindcss.com"></script>
-<div
-    class="w-full md:w-2/3 lg:w-3/4 overflow-hidden flex flex-col m-auto border border-solid border-gray-100 rounded-xl shadow-lg my-3">
-    <div class="flex flex-row items-center mx-3 my-1 bg-gray-100 rounded-t-2xl p-3 gap-x-3">
-        {% comment %} <span class="text-2xl"><a href="{ %url% 'product_detail' room.item.id }"> < </a> {% endcomment %}
-             </span>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          orange: {
+            50: '#fff8f1',
+            100: '#feecdc',
+            200: '#fcd9bd',
+            300: '#fdba8c',
+            400: '#ff8a4c',
+            500: '#ff5a1f',
+            600: '#d03801',
+            700: '#b43403',
+            800: '#8a2c0d',
+            900: '#771d1d',
+          }
+        },
+        animation: {
+          fadeIn: 'fadeIn 0.3s ease-in-out',
+        },
+        keyframes: {
+          fadeIn: {
+            '0%': { opacity: '0', transform: 'translateY(10px)' },
+            '100%': { opacity: '1', transform: 'translateY(0)' }
+          }
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Fixed height container with more obvious scrolling -->
+<div class="w-full md:w-2/3 lg:w-3/4 mx-auto flex flex-col bg-white rounded-xl shadow-xl border border-gray-100 my-4" style="height: 85vh;">
+    <!-- Chat header with user info -->
+    <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 relative">
+        <!-- Header content -->
+        <div class="flex items-center gap-3">
+            <a href="javascript:history.back()" class="text-white hover:bg-white/20 rounded-full p-1.5 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            
             {% if request.user == room.user_started %}
                 {% with avatar_url=room.user_opponent.profile.get_avatar_url %}
-                    <img src="{{ avatar_url|default:'/static/media/png/user.png' }}" alt="" class="w-10 h-10 rounded-full">
+                    <img src="{{ avatar_url|default:'/static/media/png/user.png' }}" alt="" 
+                         class="w-12 h-12 rounded-full ring-2 ring-white shadow-md object-cover">
                 {% endwith %}
+                <div>
+                    <span class="font-bold text-xl">{{ room.user_opponent.username|title }}</span>
+                </div>
             {% else %}
                 {% with avatar_url=room.user_started.profile.get_avatar_url %}
-                    <img src="{{ avatar_url|default:'/static/media/png/user.png' }}" alt="" class="w-10 h-10 rounded-full">
+                    <img src="{{ avatar_url|default:'/static/media/png/user.png' }}" alt="" 
+                         class="w-12 h-12 rounded-full ring-2 ring-white shadow-md object-cover">
                 {% endwith %}
+                <div>
+                    <span class="font-bold text-xl">{{ room.user_started.username|title }}</span>
+                </div>
             {% endif %}
-
-                <span class="font-bold text-3xl">
-                    {% if request.user == room.user_started %}
-                    {{ room.user_opponent.username|title }}
-                    {% else %}
-                    {{ room.user_started.username|title }}
-                    {% endif %}
-                </span>
-    </div>
-
-    <div class="flex flex-row items-center mx-3 mb-2 bg-gray-100 p-3 gap-x-3">
-        <img src="{% item_image_url room.item %}" alt="{{ room.item.title }}"
-            class="h-auto w-24 transition-all duration-300 rounded-lg cursor-pointer filter grayscale hover:grayscale-0">
-        <div class="flex flex-col gap-y-2">
-            <span>{{room.item.title}}</span>
-            {%if room.item.discounted_price%}
-            <span>{{room.item.discounted_price}} <i class="fa-solid fa-tenge-sign"></i></span>
-            {%else%}
-            <span>{{room.item.price}} <i class="fa-solid fa-tenge-sign"></i></span>
-            {%endif%}
+            
+            <div id="connection-status" class="ml-auto text-xs bg-white/20 px-2 py-1 rounded-full">
+                Connecting...
+            </div>
         </div>
     </div>
 
-    <div class="h-[50vh] flex flex-col gap-y-3 mx-3 overflow-y-auto" id="chat-messages"
-        data-avafiruser="{{ room.user_started.profile.get_avatar_url }}"
-        data-avasecuser="{{ room.user_opponent.profile.get_avatar_url }}" data-firusername="{{ messages.0.user }}"
-        data-secusername="{{ request.user }}">
+    <!-- Product info card -->
+    <div class="bg-gradient-to-br from-orange-50 to-white border-b border-gray-200 p-4">
+        <div class="flex items-center gap-3">
+            <div class="relative overflow-hidden rounded-lg shadow-sm">
+                <img src="{% item_image_url room.item %}" alt="{{ room.item.title }}"
+                    class="h-20 w-20 object-cover">
+            </div>
+            <div class="flex-1">
+                <h3 class="font-semibold text-gray-800 mb-1 line-clamp-1">{{room.item.title}}</h3>
+                <div class="flex items-end gap-2">
+                    {%if room.item.discounted_price%}
+                        <span class="text-lg font-bold text-orange-600">{{room.item.discounted_price}} <i class="fa-solid fa-tenge-sign"></i></span>
+                        <span class="text-sm line-through text-gray-400">{{room.item.price}} <i class="fa-solid fa-tenge-sign"></i></span>
+                    {%else%}
+                        <span class="text-lg font-bold text-orange-600">{{room.item.price}} <i class="fa-solid fa-tenge-sign"></i></span>
+                    {%endif%}
+                </div>
+            </div>
+            <a href="{% url 'product_detail' product_id=room.item.id %}" class="px-3 py-1.5 bg-orange-500 text-white rounded-full text-sm font-medium hover:bg-orange-600 transition-colors shadow-sm flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                View Item
+            </a>
+        </div>
+    </div>
+    
+    <!-- Load more messages button - more prominent -->
+    <button id="load-more-messages" class="mx-auto my-2 px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 text-sm font-medium rounded-lg shadow-sm transition-all focus:outline-none flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+        </svg>
+        Load older messages
+    </button>
+
+    <!-- Messages area with more obvious scrolling -->
+    <div class="flex-1 overflow-y-auto px-4 py-3 bg-gray-50" id="chat-messages" style="scroll-behavior: smooth; overflow-y: scroll;"
+        data-avafiruser="{{ room.user_started.profile.get_avatar_url|default:'/static/media/png/user.png' }}"
+        data-avasecuser="{{ room.user_opponent.profile.get_avatar_url|default:'/static/media/png/user.png' }}" 
+        data-firusername="{{ room.user_started.username }}"
+        data-secusername="{{ room.user_opponent.username }}">
+
+        <!-- Date divider -->
+        <div class="flex items-center justify-center my-3">
+            <div class="bg-gray-200 rounded-full px-3 py-1 text-xs font-medium text-gray-500">Today</div>
+        </div>
 
         {% for message in messages %}
-        <div class="flex {% if message.user == request.user %}flex-row-reverse{% else %}flex-row{% endif %} gap-x-2">
-<!--            <img src="{% if message.user.profile.get_avatar_url %}{{ message.user.profile.get_avatar_url }}{% else %}{% static 'media/png/user.png' %}{% endif %}" alt="" class="w-10 h-10 rounded-full"> -->
-
-            <div
-                class="flex flex-col rounded-xl gap-y-2 p-2 {% if message.user == request.user %}bg-violet-300{% else %}bg-gray-200{% endif %}">
-                <div class="flex flex-row gap-x-3">
-                    <span class="font-bold">{{ message.user.username }}</span>
+        <div class="flex {% if message.user == request.user %}flex-row-reverse{% else %}flex-row{% endif %} gap-x-2 mb-3 animate-fadeIn" data-message-id="{{ message.id }}">
+            {% if message.user != request.user %}
+                <img src="{% if message.user.profile.get_avatar_url %}{{ message.user.profile.get_avatar_url }}{% else %}{% static 'media/png/user.png' %}{% endif %}" alt="" 
+                     class="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200 mt-1">
+            {% endif %}
+            
+            <div class="flex flex-col max-w-[75%]">
+                <div class="rounded-2xl px-4 py-3 shadow-sm
+                    {% if message.user == request.user %}
+                        bg-orange-500 text-white
+                    {% else %}
+                        bg-white border border-gray-200 text-gray-800
+                    {% endif %}">
+                    {% if message.user != request.user %}
+                        <div class="flex flex-row gap-x-3 mb-1">
+                            <span class="font-medium text-sm text-gray-500">{{ message.user.username }}</span>
+                        </div>
+                    {% endif %}
+                    <p class="whitespace-pre-wrap break-words">{{ message.content }}</p>
                 </div>
-                <span>{{ message.content }}</span>
+                <span class="text-xs text-gray-400 mt-1 px-1 {% if message.user == request.user %}self-end{% endif %}">
+                    {{ message.date_added|time:"H:i" }}
+                </span>
             </div>
+            
+            {% if message.user == request.user %}
+                <img src="{% if message.user.profile.get_avatar_url %}{{ message.user.profile.get_avatar_url }}{% else %}{% static 'media/png/user.png' %}{% endif %}" alt="" 
+                     class="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200 mt-1">
+            {% endif %}
+        </div>
+        {% empty %}
+        <!-- Empty state for no messages -->
+        <div class="flex flex-col items-center justify-center h-full text-gray-400 py-10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <p class="text-lg font-medium">No messages yet</p>
+            <p class="text-sm">Start the conversation about this item!</p>
         </div>
         {% endfor %}
     </div>
 
-    <form class="flex flex-row items-center gap-x-3 mx-3 my-1 bg-gray-100 rounded-xl p-3">
-        {% csrf_token %}
-        <textarea name="content"
-            class="w-3/4 items-center bg-transparent border-none focus:outline-none resize-none text-xl placeholder:text-xl placeholder:text-gray-400"
-            placeholder="Your message..." id="chat-message-input" required></textarea>
-        <button class="w-1/4 px-4 py-3 rounded-xl text-white bg-teal-600 hover:bg-teal-700 focus:outline-none"
-            id="chat-message-submit">Send</button>
-    </form>
+    <!-- Scroll to bottom button - fixed position -->
+    <div id="scroll-to-bottom" class="hidden fixed bottom-32 right-8 bg-orange-500 text-white p-2 rounded-full shadow-lg cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+    </div>
+
+    <!-- Enhanced message input area - taller and more prominent -->
+    <div class="border-t border-gray-200 bg-white p-4">
+        <form class="flex items-center gap-2 bg-gray-100 rounded-xl px-4 py-2 shadow-inner">
+            {% csrf_token %}
+            
+            <!-- Input area -->
+            <div class="flex-1 relative">
+                <textarea 
+                    name="content"
+                    id="chat-message-input"
+                    rows="2"
+                    class="w-full bg-transparent border-none focus:outline-none resize-none text-gray-800 placeholder:text-gray-400 py-2 min-h-[40px]"
+                    placeholder="Type your message..."
+                    required
+                ></textarea>
+            </div>
+
+            <!-- Send button - larger and more visible -->
+            <button 
+                type="button"
+                id="chat-message-submit"
+                class="rounded-full p-3 bg-orange-500 text-white hover:bg-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+            </button>
+        </form>
+    </div>
 </div>
-    {{ room.slug|json_script:"json-roomname" }}
-    {{ request.user.username|json_script:"json-username" }}
-    {{ room.token|json_script:"json-token" }}
-    <script src="{% static 'js/chat.js' %}"></script>
+
+<style>
+  /* More visible scrollbar */
+  #chat-messages::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  #chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  #chat-messages::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 10px;
+  }
+  
+  #chat-messages::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
+  
+  /* Auto-resize textarea */
+  textarea {
+    overflow: hidden;
+    min-height: 40px !important;
+    max-height: 120px;
+  }
+  
+  /* Connection status styles */
+  .connection-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .connected {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: rgb(16, 185, 129);
+  }
+  
+  .disconnected {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: rgb(239, 68, 68);
+  }
+  
+  .connecting {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: rgb(245, 158, 11);
+  }
+  
+  /* Scroll to bottom button animation */
+  #scroll-to-bottom {
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+  
+  #scroll-to-bottom:hover {
+    transform: scale(1.1);
+    background-color: #d03801;
+  }
+</style>
+
+<script>
+  // Auto-resize textarea as user types
+  const textarea = document.getElementById('chat-message-input');
+  const chatMessages = document.getElementById('chat-messages');
+  const scrollToBottomBtn = document.getElementById('scroll-to-bottom');
+  
+  // Track if we're at the bottom of the chat
+  let isAtBottom = true;
+  
+  // Show/hide scroll to bottom button based on scroll position
+  function updateScrollButton() {
+    const { scrollTop, scrollHeight, clientHeight } = chatMessages;
+    
+    // Check if we're near the bottom
+    isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+    
+    // Show button when not at the bottom
+    if (!isAtBottom) {
+      scrollToBottomBtn.classList.remove('hidden');
+    } else {
+      scrollToBottomBtn.classList.add('hidden');
+    }
+  }
+  
+  // Scroll to bottom of chat messages
+  function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    updateScrollButton();
+  }
+  
+  // Event listeners
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.max(40, this.scrollHeight) + 'px';
+    
+    // Enable/disable send button based on content
+    const submitButton = document.getElementById('chat-message-submit');
+    submitButton.disabled = this.value.trim() === '';
+  });
+  
+  // Enter to send, Shift+Enter for new line
+  textarea.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      const submitButton = document.getElementById('chat-message-submit');
+      if (!submitButton.disabled) {
+        submitButton.click();
+      }
+    }
+  });
+  
+  // Scroll event listener for chat messages
+  chatMessages.addEventListener('scroll', updateScrollButton);
+  
+  // Click on scroll to bottom button
+  scrollToBottomBtn.addEventListener('click', scrollToBottom);
+  
+  // Load more button functionality
+  const loadMoreBtn = document.getElementById('load-more-messages');
+  loadMoreBtn.addEventListener('click', function() {
+    // Save scroll position
+    const scrollPosition = chatMessages.scrollTop;
+    const oldScrollHeight = chatMessages.scrollHeight;
+    
+    // In a real implementation, this would fetch messages from API
+    this.innerHTML = `
+      <svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Loading...
+    `;
+    
+    // Simulate loading (remove in production)
+    setTimeout(() => {
+      this.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+        </svg>
+        Load older messages
+      `;
+    }, 1000);
+  });
+  
+  // Initialize on page load
+  window.addEventListener('load', function() {
+    scrollToBottom();
+    updateScrollButton();
+    
+    // Focus on textarea
+    setTimeout(() => {
+      textarea.focus();
+    }, 500);
+  });
+</script>
+
+{{ room.slug|json_script:"json-roomname" }}
+{{ request.user.username|json_script:"json-username" }}
+{{ room.token|json_script:"json-token" }}
+<script src="{% static 'js/chat.js' %}"></script>
 {% endblock main %}

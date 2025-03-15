@@ -1067,3 +1067,81 @@ def password_reset_confirm_view(request, token):
             return redirect("password_reset_confirm", token=token)
 
     return render(request, "password_reset_confirm.html", {"token": token})
+
+
+@login_required
+@csrf_exempt
+def chat_history_api(request, room_slug):
+    try:
+        room = get_object_or_404(models.Room, slug=room_slug)
+
+        if room.user_started_id != request.user.id and room.user_opponent_id != request.user.id:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+        token = request.GET.get('token')
+        if not room.is_valid_token(token):
+            return JsonResponse({'error': 'Invalid token'}, status=403)
+
+        before_time = request.GET.get('before')
+        limit = int(request.GET.get('limit', 20))
+
+        messages_query = models.Message.objects.filter(room=room)
+
+        if before_time:
+            try:
+                hours, minutes = map(int, before_time.split(':'))
+                current_date = timezone.now().date()
+                before_datetime = timezone.make_aware(
+                    datetime.datetime.combine(current_date, datetime.time(hours, minutes))
+                )
+                messages_query = messages_query.filter(date_added__lt=before_datetime)
+            except (ValueError, AttributeError) as e:
+                logger.error(f"Error parsing time: {str(e)}")
+                pass
+
+        messages = messages_query.order_by('-date_added')[:limit]
+
+        first_avatar = '/static/media/png/user.png'
+        second_avatar = '/static/media/png/user.png'
+
+        try:
+            if hasattr(room.user_started, 'profile'):
+                user_started_profile = room.user_started.profile
+                if hasattr(user_started_profile, 'get_avatar_url'):
+                    avatar_url = user_started_profile.get_avatar_url()
+                    if avatar_url:
+                        first_avatar = avatar_url
+        except Exception as e:
+            logger.error(f"Error getting first user avatar: {str(e)}")
+
+        try:
+            if hasattr(room.user_opponent, 'profile'):
+                user_opponent_profile = room.user_opponent.profile
+                if hasattr(user_opponent_profile, 'get_avatar_url'):
+                    avatar_url = user_opponent_profile.get_avatar_url()
+                    if avatar_url:
+                        second_avatar = avatar_url
+        except Exception as e:
+            logger.error(f"Error getting second user avatar: {str(e)}")
+
+        message_data = []
+        for message in reversed(list(messages)):
+            local_time = timezone.localtime(message.date_added)
+            formatted_time = local_time.strftime("%H:%M")
+
+            message_data.append(
+                {
+                    'message': message.content,
+                    'username': message.user.username,
+                    'timestamp': formatted_time,
+                    'avafiruser': first_avatar,
+                    'avasecuser': second_avatar,
+                    'firusername': room.user_started.username,
+                    'secusername': room.user_opponent.username,
+                }
+            )
+
+        return JsonResponse({'messages': message_data})
+    except Exception as e:
+        logger.error(f"Error in chat history API: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
