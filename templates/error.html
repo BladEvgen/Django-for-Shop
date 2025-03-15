@@ -1,24 +1,246 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error</title>
+    <title>Упс! Что-то пошло не так</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .error-container {
+            max-width: 800px;
+            margin: 80px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        
+        .error-header {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 25px 30px;
+            border-bottom: 1px solid #f5c6cb;
+            position: relative;
+        }
+        
+        .error-icon {
+            font-size: 60px;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        
+        .error-body {
+            padding: 30px;
+            background-color: white;
+        }
+        
+        .error-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .error-message {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+        
+        .error-code {
+            display: inline-block;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 25px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #6c757d;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        
+        .actions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn-home {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-home:hover {
+            background-color: #0069d9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-back {
+            background-color: transparent;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-back:hover {
+            background-color: #f8f9fa;
+            color: #5a6268;
+        }
+        
+        .help-links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .help-links h5 {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        
+        .help-links ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .help-links li {
+            margin-bottom: 8px;
+        }
+        
+        .help-links a {
+            color: #007bff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .help-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .help-links i {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 576px) {
+            .error-container {
+                margin: 40px 15px;
+                border-radius: 8px;
+            }
+            
+            .error-header {
+                padding: 20px;
+            }
+            
+            .error-body {
+                padding: 20px;
+            }
+            
+            .error-title {
+                font-size: 24px;
+            }
+            
+            .actions-container {
+                flex-direction: column;
+            }
+            
+            .btn-home, .btn-back {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div class="container mt-5">
-    <div class="alert alert-danger" role="alert">
-        <h4 class="alert-heading">Error</h4>
-        <p>Ooops something is broken <br>{{ error }}</p>
-        <hr>
-        <p class="mb-0">Пожалуйства вернитесь на <a href="{% url 'home' %}">домашнюю страницу</a>.</p>
+<div class="container">
+    <div class="error-container">
+        <div class="error-header text-center">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h1 class="error-title">Упс! Что-то пошло не так</h1>
+            <p class="mb-0">Мы столкнулись с неожиданной проблемой</p>
+        </div>
+        
+        <div class="error-body">
+            <div class="error-message">
+                <p>Извините за неудобства. Возникла ошибка при обработке вашего запроса. Наши специалисты уже работают над её устранением.</p>
+                
+                {% if error %}
+                <div class="error-details">
+                    <h5><i class="fas fa-bug me-2"></i>Техническая информация:</h5>
+                    <div class="error-code">{{ error }}</div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="actions-container">
+                <a href="{% url 'home' %}" class="btn btn-home">
+                    <i class="fas fa-home me-2"></i>На главную страницу
+                </a>
+                <button onclick="window.history.back()" class="btn btn-back">
+                    <i class="fas fa-arrow-left me-2"></i>Вернуться назад
+                </button>
+            </div>
+            
+            <div class="help-links">
+                <h5>Что можно сделать:</h5>
+                <ul>
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fas fa-redo"></i>Попробовать ещё раз позже
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0)" onclick="window.location.reload()">
+                            <i class="fas fa-sync"></i>Обновить страницу
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fas fa-search"></i>Поискать нужную информацию на главной странице
+                        </a>
+                    </li>
+                    {% if contact_url %}
+                    <li>
+                        <a href="{% url contact_url %}">
+                            <i class="fas fa-headset"></i>Связаться с нашей службой поддержки
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
-    <script defer src="{% static 'js/bootstrap/bootstrap.js' %}"></script>
+
+<script defer src="{% static 'js/bootstrap/bootstrap.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Error page loaded");
+    });
+</script>
 
 </body>
 </html>
