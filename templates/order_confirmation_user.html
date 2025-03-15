@@ -3,94 +3,685 @@
 {% load static %}
 
 {% block main %}
-<div class="container mt-5">
-    <!-- Заголовок -->
-    <h2 class="text-center text-primary mb-4">🎉 Подтверждение заказа</h2>
-
-    <!-- Сообщение об успехе -->
-    <div class="alert alert-success text-center" role="alert">
-        <p class="mb-0">Спасибо за ваш заказ! Ваша покупка подтверждена.</p>
+<div class="container py-5">
+    <!-- Order Confirmation Header -->
+    <div class="order-success-container">
+        <div class="success-icon-container">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+        </div>
+        <h1 class="order-title">Заказ подтвержден</h1>
+        <p class="order-subtitle">Спасибо за Вашу покупку! Ваш заказ был успешно оформлен.</p>
+        
+        <!-- Progress Indicator -->
+        <div class="progress-bar-container mt-4">
+            <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="progress-steps">
+                <div class="step completed">
+                    <div class="step-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="step-label">Корзина</div>
+                </div>
+                <div class="step completed">
+                    <div class="step-icon">
+                        <i class="fas fa-address-card"></i>
+                    </div>
+                    <div class="step-label">Оформление</div>
+                </div>
+                <div class="step completed active">
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="step-label">Завершение</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Карточка с подробностями заказа -->
-    <div class="card mt-4 shadow-sm border-0">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">📜 Подробности заказа</h4>
-        </div>
-        <div class="card-body">
-            <!-- Основная информация -->
-            <div class="mb-3">
-                <p><strong>Номер заказа:</strong> {{ order.id }}</p>
-                <p><strong>Дата заказа:</strong> {{ order.date_created|date:"d F, Y H:i" }}</p>
-                <p><strong>Статус заказа:</strong> 
-                    <span class="badge bg-success">{{ order.status }}</span>
-                </p>
-            </div>
-
-            <!-- Контактная информация -->
-            <h5 class="text-primary">👤 Контактная информация:</h5>
-            <ul class="list-group list-group-flush mb-4">
-                <li class="list-group-item"><strong>Фамилия:</strong> {{ order.user.last_name }}</li>
-                <li class="list-group-item"><strong>Имя:</strong> {{ order.user.first_name }}</li>
-                <li class="list-group-item"><strong>Телефон:</strong> {{ order.user.profile.phonenumber }}</li>
-                <li class="list-group-item"><strong>Адрес:</strong> {{ order.user.profile.address }}</li>
-            </ul>
-
-            <!-- Информация о товарах -->
-            <h5 class="text-primary">📦 Информация о товарах:</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover mt-3">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Товар</th>
-                            <th class="text-center">Количество</th>
-                            <th class="text-center">Цена за единицу</th>
-                            <th class="text-center">Общая цена</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+    <div class="row mt-5">
+        <!-- Order Details -->
+        <div class="col-lg-8">
+            <div class="order-details-card">
+                <div class="card-header">
+                    <div class="header-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <h2>Детали заказа</h2>
+                    <div class="order-number">
+                        Заказ #{{ order.id }}
+                    </div>
+                </div>
+                
+                <div class="order-info">
+                    <div class="info-section">
+                        <h3>
+                            <i class="fas fa-info-circle me-2"></i>Основная информация
+                        </h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Дата заказа</span>
+                                <span class="info-value">{{ order.date_created|date:"d F, Y" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Время</span>
+                                <span class="info-value">{{ order.date_created|date:"H:i" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Статус</span>
+                                <span class="info-value status-badge">{{ order.status }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Способ оплаты</span>
+                                <span class="info-value">Наличными при получении</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>
+                            <i class="fas fa-user me-2"></i>Информация о получателе
+                        </h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Фамилия</span>
+                                <span class="info-value">{{ order.user.last_name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Имя</span>
+                                <span class="info-value">{{ order.user.first_name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Телефон</span>
+                                <span class="info-value">{{ order.user.profile.phonenumber }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Адрес доставки</span>
+                                <span class="info-value address-value">{{ order.user.profile.address }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="items-section">
+                    <h3>
+                        <i class="fas fa-box-open me-2"></i>Товары в заказе
+                    </h3>
+                    
+                    <div class="order-items">
                         {% for order_item in order.order_items.all %}
-                        <tr>
-                            <td>{{ order_item.item.title }}</td>
-                            <td class="text-center">{{ order_item.quantity }} шт</td>
-                            <td class="text-center">
-                                {{ order_item.item.discounted_price|default:order_item.item.price }} ₸
-                            </td>
-                            <td class="text-center">{{ order_item.calculate_item_total }} ₸</td>
-                        </tr>
+                        <div class="order-item">
+                            <div class="item-image">
+                                {% if order_item.item.image %}
+                                <img src="{% item_image_url order_item.item %}" alt="{{ order_item.item.title }}">
+                                {% else %}
+                                <div class="placeholder-image">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <div class="item-name">{{ order_item.item.title }}</div>
+                                <div class="item-quantity">{{ order_item.quantity }} шт.</div>
+                            </div>
+                            <div class="item-price">
+                                <div class="unit-price">
+                                    {% if order_item.item.discounted_price %}
+                                    {% digit_beautify order_item.item.discounted_price %} ₸
+                                    {% else %}
+                                    {% digit_beautify order_item.item.price %} ₸
+                                    {% endif %}
+                                </div>
+                                <div class="total-price">
+                                    {% digit_beautify order_item.calculate_item_total %} ₸
+                                </div>
+                            </div>
+                        </div>
                         {% endfor %}
-                        <tr class="table-secondary">
-                            <td colspan="3" class="text-end"><strong>Общая стоимость:</strong></td>
-                            <td class="text-center"><strong>{{ order.get_total_price }} ₸</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="order-summary">
+                <h3 class="summary-title">Сводка заказа</h3>
+                
+                <div class="summary-row">
+                    <div class="summary-label">Товаров в заказе</div>
+                    <div class="summary-value">{{ order.order_items.count }}</div>
+                </div>
+                
+                {% with total_quantity=0 %}
+                {% for item in order.order_items.all %}
+                    {% with total_quantity=total_quantity|add:item.quantity %}{% endwith %}
+                {% endfor %}
+                <div class="summary-row">
+                    <div class="summary-label">Общее количество</div>
+                    <div class="summary-value">{{ total_quantity }}</div>
+                </div>
+                {% endwith %}
+                
+                <div class="summary-row">
+                    <div class="summary-label">Стоимость товаров</div>
+                    <div class="summary-value">{% digit_beautify order.get_total_price %} ₸</div>
+                </div>
+                
+                <div class="summary-row">
+                    <div class="summary-label">Доставка</div>
+                    <div class="summary-value">Бесплатно</div>
+                </div>
+                
+                <div class="summary-divider"></div>
+                
+                <div class="summary-row total">
+                    <div class="summary-label">Итого</div>
+                    <div class="summary-value">{% digit_beautify order.get_total_price %} ₸</div>
+                </div>
+                
+                <div class="summary-actions">
+                    <a href="{% url 'home' %}" class="btn btn-primary btn-block">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'profile' user.username %}" class="btn btn-outline-primary btn-block mt-2">
+                        <i class="fas fa-user me-2"></i>В личный кабинет
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div class="delivery-info">
+                    <div class="delivery-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="delivery-details">
+                        <h4>Ожидаемая доставка</h4>
+                        <p>В течение 3-5 рабочих дней</p>
+                    </div>
+                </div>
+                
+                <div class="support-info">
+                    <div class="support-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="support-details">
+                        <h4>Нужна помощь?</h4>
+                        <p>
+                            Свяжитесь с нашей службой поддержки
+                            <a href="mailto:support@example.com">support@example.com</a>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Скрипт для тултипов -->
-<script>
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-</script>
-
-<!-- Стилизация -->
 <style>
+    /* Container */
+    .container {
+        max-width: 1200px;
+    }
+    
+    /* Success Header */
+    .order-success-container {
+        text-align: center;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .success-icon-container {
+        margin-bottom: 1.5rem;
+    }
+    
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        background-color: #28a745;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto;
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
+    }
+    
+    .order-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .order-subtitle {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    /* Progress Steps */
+    .progress-bar-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-bar {
+        border-radius: 10px;
+    }
+    
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+    }
+    
+    .step.active .step-icon {
+        background-color: #28a745;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .step.active .step-label {
+        font-weight: 700;
+        color: #28a745;
+    }
+    
+    .step.completed .step-icon {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .step-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    /* Order Details Card */
+    .order-details-card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
     .card-header {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+    }
+    
+    .header-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        background-color: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 1.25rem;
-        font-weight: bold;
+        margin-right: 1rem;
     }
-
-    .table th, .table td {
-        vertical-align: middle;
+    
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
     }
-
-    .badge {
+    
+    .order-number {
+        margin-left: auto;
+        background-color: #f0f0f0;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    /* Information Sections */
+    .order-info {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .info-section {
+        margin-bottom: 2rem;
+    }
+    
+    .info-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .info-section h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-value {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+    }
+    
+    .address-value {
+        line-height: 1.5;
+    }
+    
+    /* Items Section */
+    .items-section {
+        padding: 1.5rem;
+    }
+    
+    .items-section h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .order-items {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .order-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .item-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-right: 1rem;
+    }
+    
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .placeholder-image {
+        width: 100%;
+        height: 100%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    
+    .item-quantity {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .item-price {
+        text-align: right;
+    }
+    
+    .unit-price {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .total-price {
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    /* Order Summary */
+    .order-summary {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        position: sticky;
+        top: 20px;
+    }
+    
+    .summary-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        color: #2c3e50;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
         font-size: 1rem;
-        padding: 0.5em 0.75em;
+    }
+    
+    .summary-label {
+        color: #6c757d;
+    }
+    
+    .summary-value {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .summary-divider {
+        height: 1px;
+        background-color: #e9ecef;
+        margin: 1rem 0;
+    }
+    
+    .summary-row.total {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .summary-row.total .summary-label,
+    .summary-row.total .summary-value {
+        color: #2c3e50;
+    }
+    
+    .summary-actions {
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn-block {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-block:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Delivery & Support Info */
+    .delivery-info,
+    .support-info {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .delivery-info:last-child,
+    .support-info:last-child {
+        margin-bottom: 0;
+    }
+    
+    .delivery-icon,
+    .support-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-right: 1rem;
+    }
+    
+    .support-icon {
+        background-color: rgba(155, 89, 182, 0.1);
+        color: #9b59b6;
+    }
+    
+    .delivery-details h4,
+    .support-details h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #2c3e50;
+    }
+    
+    .delivery-details p,
+    .support-details p {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    .support-details a {
+        color: #3498db;
+        font-weight: 600;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 767.98px) {
+        .order-title {
+            font-size: 1.75rem;
+        }
+        
+        .card-header {
+            flex-wrap: wrap;
+        }
+        
+        .order-number {
+            margin-left: 0;
+            margin-top: 1rem;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .order-item {
+            flex-wrap: wrap;
+        }
+        
+        .item-image {
+            margin-bottom: 0.5rem;
+        }
+        
+        .item-details,
+        .item-price {
+            width: 100%;
+            text-align: left;
+        }
+        
+        .item-price {
+            margin-top: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
     }
 </style>
-{% endblock %}
+{% endblock main %}

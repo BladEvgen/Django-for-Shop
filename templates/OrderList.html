@@ -2,55 +2,428 @@
 {% load django_app_filters_and_tags %}
 {% block main %}
 {% check_access "moder_seller" as access %}
-{% if access %}
-<div class="container mt-5">
-    <h2 class="text-center mb-4 text-primary">📋 Лист заказов</h2>
 
-    <!-- Фильтры заказов -->
-    <div class="d-flex justify-content-center flex-wrap mb-4">
-        <a href="{% url 'order_list' %}?status=processing" class="btn {% if request.GET.status == 'processing' %}btn-primary{% else %}btn-outline-primary{% endif %} mx-2">
-            <i class="fas fa-spinner"></i> Обработка
-        </a>
-        <a href="{% url 'order_list' %}?status=confirmed" class="btn {% if request.GET.status == 'confirmed' %}btn-success{% else %}btn-outline-success{% endif %} mx-2">
-            <i class="fas fa-check-circle"></i> Подтвержденные
-        </a>
-        <a href="{% url 'order_list' %}" class="btn {% if not request.GET.status %}btn-secondary{% else %}btn-outline-secondary{% endif %} mx-2">
-            <i class="fas fa-list"></i> Все заказы
-        </a>
+<style>
+    /* Dashboard Components */
+    .dashboard-container {
+        background-color: #f8f9fa;
+        border-radius: 16px;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.03);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .dashboard-title {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
+    
+    .dashboard-title::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        height: 4px;
+        width: 60px;
+        background: linear-gradient(90deg, #4e73df, #3a55d7);
+        border-radius: 2px;
+    }
+    
+    /* Filter Controls */
+    .filter-controls {
+        background-color: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-btn {
+        border-radius: 50px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    }
+    
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Stats Cards */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background-color: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card.total {
+        border-left-color: #4e73df;
+    }
+    
+    .stat-card.processing {
+        border-left-color: #f6c23e;
+    }
+    
+    .stat-card.confirmed {
+        border-left-color: #1cc88a;
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    /* Order List */
+    .order-list-container {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+    
+    .order-card {
+        padding: 1.25rem;
+        border-left: 5px solid #e9ecef;
+        border-bottom: 1px solid #f1f1f1;
+        transition: all 0.3s ease;
+        background-color: white;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1.5rem;
+        align-items: center;
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .order-card:last-child {
+        border-bottom: none;
+    }
+    
+    .order-card:hover {
+        background-color: #f8f9fa;
+        border-left-color: #4e73df;
+    }
+    
+    .order-card.processing {
+        border-left-color: #f6c23e;
+    }
+    
+    .order-card.confirmed {
+        border-left-color: #1cc88a;
+    }
+    
+    .order-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+    
+    .badge-processing {
+        background-color: rgba(246, 194, 62, 0.15);
+        color: #f6c23e;
+    }
+    
+    .badge-confirmed {
+        background-color: rgba(28, 200, 138, 0.15);
+        color: #1cc88a;
+    }
+    
+    .order-icon {
+        background-color: #f8f9fa;
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: #4e73df;
+    }
+    
+    .order-detail {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .order-number {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    
+    .order-date {
+        color: #6c757d;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .detail-btn {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .detail-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        color: #d1d3e2;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-text {
+        color: #858796;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Access Denied */
+    .access-denied {
+        text-align: center;
+        padding: 3rem 1rem;
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.03);
+    }
+    
+    .access-icon {
+        font-size: 4rem;
+        color: #e74a3b;
+        margin-bottom: 1.5rem;
+    }
+    
+    .access-title {
+        color: #e74a3b;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .access-text {
+        color: #6c757d;
+        font-size: 1.1rem;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+    
+    /* Animation delays */
+    .animation-delay-1 { animation-delay: 100ms; }
+    .animation-delay-2 { animation-delay: 200ms; }
+    .animation-delay-3 { animation-delay: 300ms; }
+    .animation-delay-4 { animation-delay: 400ms; }
+    .animation-delay-5 { animation-delay: 500ms; }
+    .animation-delay-6 { animation-delay: 600ms; }
+    .animation-delay-7 { animation-delay: 700ms; }
+    .animation-delay-8 { animation-delay: 800ms; }
+    .animation-delay-9 { animation-delay: 900ms; }
+    .animation-delay-10 { animation-delay: 1000ms; }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .filter-controls {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .filter-btn {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .order-card {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .order-icon {
+            display: none;
+        }
+    }
+</style>
+
+{% if access %}
+<div class="container mt-5 mb-5 animate-fade-in">
+    <!-- Dashboard Header -->
+    <div class="dashboard-container">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+                <h2 class="dashboard-title text-primary m-0">Панель управления заказами</h2>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="d-flex justify-content-md-end align-items-center">
+                    <span class="text-muted me-2">Последнее обновление:</span>
+                    <span class="fw-bold">{% now "d.m.Y H:i" %}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-container">
+            <div class="stat-card total">
+                <div class="stat-value">{{ total_orders_count }}</div>
+                <div class="stat-label">
+                    <i class="fas fa-shopping-cart"></i>
+                    Всего заказов
+                </div>
+            </div>
+            
+            {% if processing_count %}
+            <div class="stat-card processing">
+                <div class="stat-value">{{ processing_count }}</div>
+                <div class="stat-label">
+                    <i class="fas fa-spinner"></i>
+                    В обработке
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if confirmed_count %}
+            <div class="stat-card confirmed">
+                <div class="stat-value">{{ confirmed_count }}</div>
+                <div class="stat-label">
+                    <i class="fas fa-check-circle"></i>
+                    Подтверждено
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-controls d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'order_list' %}?status=processing" class="filter-btn btn {% if request.GET.status == 'processing' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Обработка</span>
+            </a>
+            <a href="{% url 'order_list' %}?status=confirmed" class="filter-btn btn {% if request.GET.status == 'confirmed' %}btn-success{% else %}btn-outline-success{% endif %}">
+                <i class="fas fa-check-circle"></i>
+                <span>Подтверждённые</span>
+            </a>
+            <a href="{% url 'order_list' %}" class="filter-btn btn {% if not request.GET.status %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-list-ul"></i>
+                <span>Все заказы</span>
+            </a>
+        </div>
     </div>
 
-    <!-- Список заказов -->
+    <!-- Order List -->
     <div class="order-list-container">
         {% if orders %}
-        <ul class="list-group">
             {% for order in orders %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Заказ #{{ order.id }}</strong> <br>
-                    Дата: {{ order.date_created|date:"d M Y, H:i" }}
+            <div class="order-card {% if order.status == 'processing' %}processing{% elif order.status == 'confirmed' %}confirmed{% endif %} animation-delay-{{ forloop.counter }}">
+                <div class="order-icon">
+                    <i class="fas {% if order.status == 'processing' %}fa-spinner{% elif order.status == 'confirmed' %}fa-check-circle{% else %}fa-shopping-bag{% endif %}"></i>
                 </div>
-                <a href="{% url 'order_detail' order.id %}" class="btn btn-outline-info btn-sm">
-                    <i class="fas fa-info-circle"></i> Подробнее
-                </a>
-            </li>
+                <div class="order-detail">
+                    <div class="order-number">Заказ #{{ order.id }}</div>
+                    <div class="order-date">
+                        <i class="far fa-calendar-alt"></i>
+                        {{ order.date_created|date:"d.m.Y, H:i" }}
+                    </div>
+                    <div class="order-badge {% if order.status == 'processing' %}badge-processing{% elif order.status == 'confirmed' %}badge-confirmed{% endif %}">
+                        <i class="fas {% if order.status == 'processing' %}fa-spinner fa-spin{% elif order.status == 'confirmed' %}fa-check-circle{% else %}fa-info-circle{% endif %} me-1"></i>
+                        {{ order.get_status_display }}
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'order_detail' order.id %}" class="detail-btn btn btn-outline-primary">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Подробнее</span>
+                    </a>
+                </div>
+            </div>
             {% endfor %}
-        </ul>
         {% else %}
-        <div class="text-center mt-4">
-            <p class="text-muted">Заказов не найдено</p>
-        </div>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3 class="empty-text">Заказов не найдено</h3>
+                <p class="text-muted">Возможно, вы применили фильтры, которые ничего не возвращают</p>
+                <a href="{% url 'order_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-redo me-2"></i>Сбросить фильтры
+                </a>
+            </div>
         {% endif %}
-    </div>
-
-    <!-- Информация о заказах -->
-    <div class="mt-4 text-center">
-        <p><strong>Общее количество заказов:</strong> {{ total_orders_count }}</p>
     </div>
 </div>
 {% else %}
-<div class="container mt-5 text-center">
-    <h2 class="text-danger">🚫 Доступ запрещён</h2>
-    <p>У вас нет прав для просмотра этой страницы.</p>
+<div class="container mt-5">
+    <div class="access-denied animate-fade-in">
+        <div class="access-icon">
+            <i class="fas fa-lock"></i>
+        </div>
+        <h2 class="access-title">Доступ запрещён</h2>
+        <p class="access-text">У вас недостаточно прав для просмотра данной страницы. Пожалуйста, обратитесь к администратору, если вы считаете, что это ошибка.</p>
+        <a href="{% url 'home' %}" class="btn btn-outline-primary mt-4">
+            <i class="fas fa-home me-2"></i>На главную страницу
+        </a>
+    </div>
 </div>
 {% endif %}
 {% endblock main %}

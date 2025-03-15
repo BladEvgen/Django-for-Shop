@@ -3,58 +3,175 @@
 {% load static %}
 
 {% block main %}
-<div class="container mt-5">
-    <h2 class="text-center mb-4">🛒 Ваша корзина</h2>
-
-    {% if cart_items %}
-    <div class="cart-container">
-        {% for cart_item in cart_items %}
-        <div class="cart-item d-flex align-items-center p-3 mb-3">
-            <div class="cart-image">
-                <img src="{{ cart_item.item.get_image_url }}" alt="{{ cart_item.item.title }}" class="img-fluid rounded">
+<div class="container py-5">
+    <div class="cart-header mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <h1 class="cart-title">Ваша корзина</h1>
+            <a href="{% url 'home' %}" class="continue-shopping">
+                <i class="fas fa-arrow-left me-2"></i>Продолжить покупки
+            </a>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
-            <div class="cart-details flex-grow-1">
-                <h4>{{ cart_item.item.title }}</h4>
-                {% if cart_item.item.discounted_price %}
-                <p class="text-muted"><del>{{ cart_item.item.price }} ₸</del></p>
-                <p><strong>Цена со скидкой:</strong> <span class="text-success">{{ cart_item.item.discounted_price }} ₸</span></p>
-                {% else %}
-                <p><strong>Цена:</strong> {{ cart_item.item.price }} ₸</p>
-                {% endif %}
-            </div>
-            <div class="cart-quantity">
-                <label for="quantity_{{ cart_item.item.id }}">Количество:</label>
-                <input type="number" id="quantity_{{ cart_item.item.id }}" name="quantity"
-                       value="{{ cart_item.quantity }}" min="1" data-item-id="{{ cart_item.item.id }}"
-                       class="form-control quantity-input">
-            </div>
-            <div class="cart-total">
-                <p><strong>Всего:</strong></p>
-                <p class="total-price" id="total_price_{{ cart_item.item.id }}">{{ cart_item.calculate_item_total }} ₸</p>
-            </div>
-            <div class="cart-remove">
-                <form method="post" action="{% url 'remove_from_cart' cart_item.item.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger btn-sm remove-btn">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </form>
+            <div class="progress-steps">
+                <div class="step active">
+                    <div class="step-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="step-label">Корзина</div>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <i class="fas fa-address-card"></i>
+                    </div>
+                    <div class="step-label">Оформление</div>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="step-label">Завершение</div>
+                </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 
-    <div class="checkout-container text-center mt-4">
-        <h4>💰 Общая сумма: <span id="total_price">{{ total_price }}</span> ₸</h4>
-        <a href="{% url 'checkout' %}" class="btn btn-lg btn-success checkout-button">
-            <i class="fas fa-credit-card"></i> Перейти к оформлению
-        </a>
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="cart-items-container">
+                <!-- Cart items header -->
+                <div class="cart-list-header d-none d-md-flex">
+                    <div class="row w-100 align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-0">Товар</h6>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h6 class="mb-0">Цена</h6>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h6 class="mb-0">Кол-во</h6>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h6 class="mb-0">Сумма</h6>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cart items list -->
+                {% for cart_item in cart_items %}
+                <div class="cart-item">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="cart-item-image">
+                                    <img src="{{ cart_item.item.get_image_url }}" alt="{{ cart_item.item.title }}" class="img-fluid">
+                                </div>
+                                <div class="cart-item-details">
+                                    <h5 class="cart-item-title">{{ cart_item.item.title }}</h5>
+                                    {% if cart_item.item.category %}
+                                    <div class="cart-item-category">{{ cart_item.item.category.title }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-md-center">
+                            <div class="cart-item-price">
+                                {% if cart_item.item.discounted_price %}
+                                <div class="price-current">{% digit_beautify cart_item.item.discounted_price %} ₸</div>
+                                <div class="price-original">{% digit_beautify cart_item.item.price %} ₸</div>
+                                {% else %}
+                                <div class="price-current">{% digit_beautify cart_item.item.price %} ₸</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-md-center">
+                            <div class="quantity-control">
+                                <button type="button" class="quantity-btn minus" data-item-id="{{ cart_item.item.id }}">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" id="quantity_{{ cart_item.item.id }}" 
+                                       name="quantity" value="{{ cart_item.quantity }}" 
+                                       min="1" data-item-id="{{ cart_item.item.id }}" 
+                                       class="form-control quantity-input">
+                                <button type="button" class="quantity-btn plus" data-item-id="{{ cart_item.item.id }}">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-md-center">
+                            <div class="d-flex align-items-center justify-content-between justify-content-md-center">
+                                <div class="cart-item-total" id="total_price_{{ cart_item.item.id }}">
+                                    {% digit_beautify cart_item.calculate_item_total %} ₸
+                                </div>
+                                <form method="post" action="{% url 'remove_from_cart' cart_item.item.id %}" class="d-inline-block">
+                                    {% csrf_token %}
+                                    <button type="submit" class="remove-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="cart-summary">
+                <h3 class="summary-title">Сводка заказа</h3>
+                
+                <div class="summary-row">
+                    <div class="summary-label">Товаров в корзине</div>
+                    <div class="summary-value">{{ cart_items|length }}</div>
+                </div>
+                
+                {% with total_quantity=0 %}
+                {% for item in cart_items %}
+                    {% with total_quantity=total_quantity|add:item.quantity %}{% endwith %}
+                {% endfor %}
+                <div class="summary-row">
+                    <div class="summary-label">Общее количество</div>
+                    <div class="summary-value">{{ total_quantity }}</div>
+                </div>
+                {% endwith %}
+                
+                <div class="summary-row">
+                    <div class="summary-label">Стоимость товаров</div>
+                    <div class="summary-value">{% digit_beautify total_price %} ₸</div>
+                </div>
+                
+                <div class="summary-row">
+                    <div class="summary-label">Доставка</div>
+                    <div class="summary-value">Бесплатно</div>
+                </div>
+                
+                <div class="summary-divider"></div>
+                
+                <div class="summary-row total">
+                    <div class="summary-label">Итого</div>
+                    <div class="summary-value" id="total_price">{% digit_beautify total_price %} ₸</div>
+                </div>
+                
+                <a href="{% url 'checkout' %}" class="btn btn-checkout">
+                    Оформить заказ
+                </a>
+            </div>
+        </div>
     </div>
     {% else %}
-    <div class="empty-cart text-center">
-        <h4>Ваша корзина пуста 😕</h4>
-        <p>Добавьте товары в корзину, чтобы оформить заказ!</p>
-        <a href="{% url 'home' %}" class="btn btn-primary">🛍 Перейти к покупкам</a>
+    <div class="empty-cart">
+        <div class="empty-cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h3>Ваша корзина пуста</h3>
+        <p>Похоже, вы еще не добавили товары в корзину</p>
+        <a href="{% url 'home' %}" class="btn btn-primary btn-lg mt-4">
+            <i class="fas fa-store me-2"></i>Перейти к покупкам
+        </a>
     </div>
     {% endif %}
 </div>
@@ -62,10 +179,30 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
   $(document).ready(function () {
+    // Update quantity on input change
     $('input[name="quantity"]').on("change", function () {
+      updateQuantity($(this).data("item-id"), $(this).val());
+    });
+    
+    // Quantity buttons
+    $('.quantity-btn.minus').on('click', function() {
       const itemId = $(this).data("item-id");
-      const quantity = $(this).val();
-
+      const input = $(`#quantity_${itemId}`);
+      let value = parseInt(input.val()) - 1;
+      value = value < 1 ? 1 : value;
+      input.val(value);
+      updateQuantity(itemId, value);
+    });
+    
+    $('.quantity-btn.plus').on('click', function() {
+      const itemId = $(this).data("item-id");
+      const input = $(`#quantity_${itemId}`);
+      let value = parseInt(input.val()) + 1;
+      input.val(value);
+      updateQuantity(itemId, value);
+    });
+    
+    function updateQuantity(itemId, quantity) {
       $.ajax({
         type: "POST",
         url: '{% url "update_cart_quantity" item_id=0 %}'.replace("0", itemId),
@@ -75,78 +212,383 @@
           csrfmiddlewaretoken: "{{ csrf_token }}",
         },
         success: function (response) {
-          $(`#total_price_${itemId}`).html(response.total.toFixed(2) + " ₸");
+          $(`#total_price_${itemId}`).html(formatPrice(response.total) + " ₸");
           updateTotalPrice();
         },
         error: function (error) {
           console.log("Error:", error);
         },
       });
-    });
-
+    }
+    
     function updateTotalPrice() {
       let totalPrice = 0;
-      $(".total-price").each(function () {
-        totalPrice += parseFloat($(this).text());
+      $(".cart-item-total").each(function () {
+        const priceText = $(this).text().trim();
+        const price = parseFloat(priceText.replace(/[^\d.-]/g, ''));
+        totalPrice += price;
       });
-      $("#total_price").text(totalPrice.toFixed(2));
+      $("#total_price").text(formatPrice(totalPrice) + " ₸");
+    }
+    
+    function formatPrice(price) {
+      return price.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$& ');
     }
   });
 </script>
 
 <style>
-    .cart-container {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 15px;
-        background: #fff;
+    /* Main Container */
+    .container {
+        max-width: 1200px;
     }
-
-    .cart-item {
+    
+    /* Cart Header */
+    .cart-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0;
+    }
+    
+    .continue-shopping {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .continue-shopping:hover {
+        color: #2980b9;
+        transform: translateX(-3px);
+    }
+    
+    /* Progress Bar */
+    .progress-bar-container {
+        margin-top: 2rem;
+    }
+    
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-bar {
+        border-radius: 10px;
+    }
+    
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+    }
+    
+    .step.active .step-icon {
+        background-color: #3498db;
+        color: white;
+    }
+    
+    .step.active .step-label {
+        font-weight: 700;
+        color: #3498db;
+    }
+    
+    .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
         display: flex;
         align-items: center;
-        border-bottom: 1px solid #eee;
-        padding: 15px 0;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        color: #6c757d;
     }
-
+    
+    .step-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    /* Cart Items Container */
+    .cart-items-container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .cart-list-header {
+        padding: 1rem 1.5rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .cart-list-header h6 {
+        color: #6c757d;
+        font-weight: 600;
+    }
+    
+    /* Cart Item */
+    .cart-item {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
     .cart-item:last-child {
         border-bottom: none;
     }
-
-    .cart-image img {
+    
+    .cart-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .cart-item-image {
         width: 80px;
         height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-right: 1rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .cart-item-image img {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
+    }
+    
+    .cart-item-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #2c3e50;
+    }
+    
+    .cart-item-category {
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: inline-block;
+        background-color: #f0f0f0;
+        padding: 0.15rem 0.5rem;
+        border-radius: 50px;
+    }
+    
+    /* Price Display */
+    .cart-item-price {
+        padding: 0.5rem 0;
+    }
+    
+    .price-current {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+    
+    .price-original {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-decoration: line-through;
+    }
+    
+    /* Quantity Controls */
+    .quantity-control {
+        display: flex;
+        align-items: center;
         border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        width: 110px;
+        margin: 0 auto;
     }
-
-    .cart-details {
-        flex: 1;
-        padding-left: 15px;
+    
+    .quantity-btn {
+        width: 32px;
+        height: 32px;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
-
-    .cart-quantity input {
-        width: 60px;
+    
+    .quantity-btn:hover {
+        background-color: #e9ecef;
+    }
+    
+    .quantity-input {
+        width: 40px;
         text-align: center;
+        border: 1px solid #e9ecef;
+        border-left: none;
+        border-right: none;
+        height: 32px;
+        padding: 0;
+        margin: 0;
+        font-weight: 600;
     }
-
-    .cart-total {
-        min-width: 100px;
-        text-align: center;
+    
+    /* Remove Button */
+    .remove-btn {
+        background: none;
+        border: none;
+        color: #e74c3c;
+        padding: 5px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-left: 1rem;
     }
-
-    .cart-remove {
-        text-align: center;
+    
+    .remove-btn:hover {
+        color: #c0392b;
+        transform: scale(1.1);
     }
-
-    .checkout-button {
-        margin-top: 20px;
-        font-size: 18px;
-        padding: 10px 20px;
+    
+    /* Cart Total Display */
+    .cart-item-total {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #2c3e50;
     }
-
+    
+    /* Order Summary */
+    .cart-summary {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        position: sticky;
+        top: 20px;
+    }
+    
+    .summary-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        color: #2c3e50;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+    
+    .summary-label {
+        color: #6c757d;
+    }
+    
+    .summary-value {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .summary-divider {
+        height: 1px;
+        background-color: #e9ecef;
+        margin: 1rem 0;
+    }
+    
+    .summary-row.total {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .summary-row.total .summary-label,
+    .summary-row.total .summary-value {
+        color: #2c3e50;
+    }
+    
+    .btn-checkout {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-checkout:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Empty Cart */
     .empty-cart {
-        padding: 50px 0;
+        text-align: center;
+        padding: 4rem 1rem;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .empty-cart-icon {
+        font-size: 5rem;
+        color: #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-cart h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: #2c3e50;
+    }
+    
+    .empty-cart p {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 767.98px) {
+        .cart-item {
+            padding: 1rem;
+        }
+        
+        .cart-item-image {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .cart-item-title {
+            font-size: 1rem;
+        }
+        
+        .cart-item .row {
+            row-gap: 1rem;
+        }
+        
+        .quantity-control {
+            margin: 0;
+        }
+        
+        .cart-item-total {
+            margin-right: auto;
+            margin-left: 0;
+        }
     }
 </style>
 {% endblock main %}

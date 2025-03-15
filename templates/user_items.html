@@ -4,69 +4,477 @@
 
 {% block main %}
 <style>
+    /* Improved Card Styling */
+    .product-card {
+        border: none;
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        height: 100%;
+        overflow: hidden;
+        background-color: #fff;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        position: relative;
+    }
+    
+    /* Glass Morphism Effect */
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    }
+    
+    .product-card:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Image Container */
+    .product-image-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px 12px 0 0;
+    }
+    
     .ratio img {
         object-fit: cover;
+        transition: transform 0.5s ease;
     }
-    .card {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        transition: box-shadow 0.3s ease-in-out;
+    
+    .product-card:hover .ratio img {
+        transform: scale(1.05);
     }
-    .card:hover {
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    
+    /* Sale & Discount Badge */
+    .discount-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background-color: #e74c3c;
+        color: white;
+        padding: 5px 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border-radius: 50px;
+        z-index: 1;
+        box-shadow: 0 3px 8px rgba(231, 76, 60, 0.4);
+        transform: rotate(-2deg);
+        transition: transform 0.3s ease;
     }
-    .card-title {
-        font-size: 1.25rem;
-        color: #333;
-        margin-bottom: 10px;
-        font-weight: bold;
+    
+    .discount-badge::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%);
+        border-radius: 50px;
     }
-    .card-text {
-        font-size: 0.95rem;
-        color: #555;
+    
+    .product-card:hover .discount-badge {
+        transform: rotate(0) scale(1.05);
     }
-    .text-danger {
+    
+    /* Product Content */
+    .product-content {
+        padding: 18px;
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,1) 100%);
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .product-title {
         font-size: 1.15rem;
-        font-weight: bold;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        line-height: 1.4;
+        height: 3em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        transition: color 0.3s ease;
+        position: relative;
     }
-    .empty-container {
+    
+    .product-card:hover .product-title {
+        color: #3498db;
+    }
+    
+    .product-title::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(90deg, #3498db, #85d8ce);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+    
+    .product-card:hover .product-title::after {
+        width: 60px;
+    }
+    
+    .product-description {
+        font-size: 0.92rem;
+        color: #7f8c8d;
+        margin-bottom: 18px;
+        height: 4em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        line-height: 1.5;
+        transition: opacity 0.3s ease;
+    }
+    
+    .product-card:hover .product-description {
+        color: #34495e;
+    }
+    
+    /* Price Styling */
+    .price-container {
+        display: flex;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 15px;
+        border-top: 1px dashed rgba(0, 0, 0, 0.08);
+    }
+    
+    .current-price {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #e74c3c;
+        position: relative;
+        display: inline-block;
+        transition: transform 0.2s ease;
+    }
+    
+    .product-card:hover .current-price {
+        transform: scale(1.05);
+    }
+    
+    .current-price::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: rgba(231, 76, 60, 0.2);
+        border-radius: 4px;
+    }
+    
+    .original-price {
+        font-size: 0.95rem;
+        color: #95a5a6;
+        text-decoration: line-through;
+        margin-left: 12px;
+        position: relative;
+        top: -2px;
+    }
+    
+    /* Category Pill */
+    .category-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        background-color: #f0f4f8;
+        color: #4a6fa5;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        margin-bottom: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-left: 3px solid #4a6fa5;
+    }
+    
+    .product-card:hover .category-pill {
+        background-color: #e7f0ff;
+        box-shadow: 0 2px 5px rgba(74, 111, 165, 0.1);
+        transform: translateX(3px);
+    }
+    
+    /* Empty State */
+    .empty-state {
         text-align: center;
-        margin-top: 50px;
+        padding: 60px 20px;
+        border-radius: 12px;
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        margin: 40px auto;
+        max-width: 800px;
     }
-    .empty-container img {
-        max-height: 300px;
-        margin-bottom: 20px;
+    
+    .empty-state img {
+        max-height: 250px;
+        margin-bottom: 30px;
+        transition: transform 0.3s ease;
+    }
+    
+    .empty-state:hover img {
+        transform: scale(1.03);
+    }
+    
+    .empty-state h3 {
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+    
+    .empty-state p {
+        color: #7f8c8d;
+        font-size: 1rem;
+        max-width: 500px;
+        margin: 0 auto 20px;
+    }
+    
+    .empty-state .btn {
+        padding: 8px 20px;
+        font-weight: 500;
+    }
+    
+    /* Search Filtering */
+    .filter-container {
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Animation Utilities */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Stock Status Indicators */
+    .stock-status {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 1;
+    }
+    
+    .in-stock {
+        background-color: rgba(46, 204, 113, 0.1);
+        color: #27ae60;
+        border: 1px solid rgba(46, 204, 113, 0.2);
+    }
+    
+    .out-of-stock {
+        background-color: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+    
+    /* Add to cart button */
+    .btn-add-to-cart {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: #3498db;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translate(50%, 50%) scale(0);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);
+        z-index: 2;
+    }
+    
+    .product-card:hover .btn-add-to-cart {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    
+    .btn-add-to-cart:hover {
+        background-color: #2980b9;
+        transform: scale(1.1);
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 767.98px) {
+        .product-title {
+            font-size: 1rem;
+            height: 2.8em;
+        }
+        
+        .product-description {
+            font-size: 0.85rem;
+        }
+        
+        .current-price {
+            font-size: 1.2rem;
+        }
+        
+        .stock-status {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+        }
     }
 </style>
 
-<div class="container mt-4">
-    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+<div class="container py-5" style="min-height: 80vh;">
+    <!-- Optional Title Section -->
+    <div class="mb-4 text-center">
+        <h2 class="fw-bold mb-1">Наши товары</h2>
+        <p class="text-muted">Выберите товары из нашего каталога</p>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
         {% for item in items %}
-            <div class="col">
-                <a href="{% url 'product_detail' item.id %}" class="card text-decoration-none">
-                    <div class="card-body">
-                        <div class="ratio ratio-4x3">
-                            <img src="{% item_image_url item %}" alt="{{ item.title }}" class="img-fluid">
-                        </div>
-                        <h5 class="card-title">{{ item.title|custom_cut:25 }}</h5>
-                        <p class="card-text">{{ item.description|custom_cut:44 }}</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
+            {% if forloop.counter == 1 %}
+            <div class="col fade-in" style="animation-delay: 0ms;">
+            {% elif forloop.counter == 2 %}
+            <div class="col fade-in" style="animation-delay: 100ms;">
+            {% elif forloop.counter == 3 %}
+            <div class="col fade-in" style="animation-delay: 200ms;">
+            {% elif forloop.counter == 4 %}
+            <div class="col fade-in" style="animation-delay: 300ms;">
+            {% elif forloop.counter == 5 %}
+            <div class="col fade-in" style="animation-delay: 400ms;">
+            {% else %}
+            <div class="col fade-in" style="animation-delay: 500ms;">
+            {% endif %}
+                <a href="{% url 'product_detail' item.id %}" class="text-decoration-none">
+                    <div class="product-card h-100">
+                        <!-- Product Image Container with Potential Discount Badge -->
+                        <div class="product-image-container">
                             {% if item.discounted_price %}
-                                <span class="text-danger">{% digit_beautify item.discounted_price %} ₸</span>
-                            {% else %}
-                                <span class="text-danger">{% digit_beautify item.price %} ₸</span>
+                                <div class="discount-badge">
+                                    <i class="fas fa-bolt me-1"></i>-{{ item.discount_percentage|floatformat }}%
+                                </div>
                             {% endif %}
+                            <div class="ratio ratio-4x3">
+                                <img src="{% item_image_url item %}" alt="{{ item.title }}" class="img-fluid">
+                            </div>
+                        </div>
+                        
+                        <!-- Product Content -->
+                        <div class="product-content d-flex flex-column h-100">
+                            {% if item.category %}
+                                <div class="category-pill">
+                                    <i class="fas fa-tag me-2"></i>{{ item.category.title }}
+                                </div>
+                            {% endif %}
+                            
+                            {% if item.is_active %}
+                                <div class="stock-status in-stock">
+                                    <i class="fas fa-check-circle me-1"></i>В наличии
+                                </div>
+                            {% else %}
+                                <div class="stock-status out-of-stock">
+                                    <i class="fas fa-times-circle me-1"></i>Продано
+                                </div>
+                            {% endif %}
+                            
+                            <h3 class="product-title">{{ item.title }}</h3>
+                            <p class="product-description">{{ item.description|custom_cut:80 }}</p>
+                            
+                            <!-- Price Display -->
+                            <div class="price-container mt-auto">
+                                <div>
+                                    {% if item.discounted_price %}
+                                        <span class="current-price">{% digit_beautify item.discounted_price %} ₸</span>
+                                        <span class="original-price">{% digit_beautify item.price %} ₸</span>
+                                    {% else %}
+                                        <span class="current-price">{% digit_beautify item.price %} ₸</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Quick add to cart button -->
+                                <button class="btn-add-to-cart">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </a>
             </div>
         {% empty %}
-            <div class="empty-container">
-                <img src="{% static 'media/png/nodatafound.png' %}" alt="No Products Found" class="img-fluid">
-                <h5 class="mt-4">Ни одного товара не найдено</h5>
-                <p class="text-muted">Попробуйте изменить критерии поиска или вернитесь позже.</p>
+            <div class="col-12">
+                <div class="empty-state">
+                    <img src="{% static 'media/png/nodatafound.png' %}" alt="Товары не найдены" class="img-fluid">
+                    <h3>Товары не найдены</h3>
+                    <p>К сожалению, по вашему запросу не найдено товаров. Попробуйте изменить критерии поиска или вернитесь позже.</p>
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                </div>
             </div>
         {% endfor %}
     </div>
+    
+    <!-- Pagination if needed -->
+    {% if items.has_other_pages %}
+    <nav aria-label="Page navigation" class="my-4">
+        <ul class="pagination justify-content-center">
+            {% if items.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ items.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+            {% endif %}
+            
+            {% for i in items.paginator.page_range %}
+                {% if items.number == i %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ i }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if items.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ items.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock main %}
